@@ -5,6 +5,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${HABIT_MANAGER_PASSWORD}
       MYSQL_DATABASE: ${HABIT_MANAGER_DATABASE}
+      MYSQL_USER: ${HABIT_MANAGER_USER}
     ports:
       - ${HABIT_MANAGER_PORT:-3306}:3306
     volumes:
