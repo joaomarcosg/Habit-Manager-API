@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -30,5 +31,5 @@ func main() {
 		log.Fatalf("database did not responsd: %v", err)
 	}
 
-	log.Printl("connected to MySQL!")
+	log.Println("connected to MySQL!")
 }
