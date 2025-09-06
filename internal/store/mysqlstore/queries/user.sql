@@ -7,8 +7,8 @@ INSERT INTO user (
 )
 VALUES (?,?,?,?);
 
---name: GetUserById :one
+-- name: GetUserById :one
 SELECT * FROM user WHERE id = ?;
 
---name: GetUserByEmail :one
+-- name: GetUserByEmail :one
 SELECT * FROM user WHERE email = ?;
