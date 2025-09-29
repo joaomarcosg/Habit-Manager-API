@@ -73,3 +73,14 @@ func (msu *MSUserStore) GetUserById(ctx context.Context, id uuid.UUID) (store.Us
 		Updatedat: user.UpdatedAt.Time,
 	}, nil
 }
+
+func (msu *MSUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+
+	user, err := msu.Queries.GetUserByEmail(ctx, email)
+
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return uuid.UUID(user.ID), nil
+}
