@@ -9,10 +9,10 @@ import (
 )
 
 type User struct {
-	ID        string       `json:"id"`
 	Name      string       `json:"name"`
 	Email     string       `json:"email"`
 	Password  string       `json:"password"`
 	CreatedAt sql.NullTime `json:"created_at"`
 	UpdatedAt sql.NullTime `json:"updated_at"`
+	ID        []byte       `json:"id"`
 }
