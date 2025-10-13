@@ -1,17 +1,16 @@
 services:
-  mysql:
-    image: mysql
-    restart: always
+  db:
+    image: postgres
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${HABIT_MANAGER_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${HABIT_MANAGER_DATABASE}
-      MYSQL_USER: ${HABIT_MANAGER_USER}
-      MYSQL_PASSWORD: ${HABIT_MANAGER_PASSWORD}
+      POSTGRES_USER: ${HABIT_MANAGER_DATABASE_USER}
+      POSTGRES_PASSWORD: ${HABIT_MANAGER_DATABASE_PASSWORD}
+      POSTGRES_DB: ${HABIT_MANAGER_DATABASE_NAME}
     ports:
-      - ${HABIT_MANAGER_PORT:-3306}:3306
+      - ${HABIT_MANAGER_DATABASE_PORT:-5432}:5432
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db:/var/lib/postgresql/data
 
 volumes:
-  mysql_data:
+  db:
     driver: local
