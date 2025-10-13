@@ -1,35 +1,39 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"log"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 
-	user := os.Getenv("HABIT_MANAGER_USER")
-	password := os.Getenv("HABIT_MANAGER_PASSWORD")
-	host := "localhost"
-	port := os.Getenv("HABIT_MANAGER_PORT")
-	dbName := os.Getenv("HABIT_MANAGER_DATABASE")
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
-		user, password, host, port, dbName)
-
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		log.Fatalf("error connecting to MySQL: %v", err)
+	if err := godotenv.Load(); err != nil {
+		panic(err)
 	}
 
-	defer db.Close()
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
+		os.Getenv("HABIT_MANAGER_DATABASE_USER"),
+		os.Getenv("HABIT_MANAGER_DATABASE_PASSWORD"),
+		os.Getenv("HABIT_MANAGER_DATABASE_HOST"),
+		os.Getenv("HABIT_MANAGER_DATABASE_PORT"),
+		os.Getenv("HABIT_MANAGER_DATABASE_NAME"),
+	))
 
-	if err := db.Ping(); err != nil {
+	if err != nil {
+		panic(err)
+	}
+
+	defer pool.Close()
+
+	if err := pool.Ping(ctx); err != nil {
 		log.Fatalf("database did not responsd: %v", err)
 	}
 
-	log.Println("connected to MySQL!")
+	log.Println("connected to PostgreSQL!")
 }
