@@ -1,11 +1,11 @@
-package service
+package services
 
 import (
 	"context"
 	"errors"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,20 +27,19 @@ func NewUserService(store store.UserStore) *UserService {
 
 func (us *UserService) CreateUser(
 	ctx context.Context,
-	userName,
+	name,
 	email,
 	password string,
 ) (uuid.UUID, error) {
-
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return uuid.UUID{}, err
 	}
 
-	id, err := us.Store.CreateUser(ctx, userName, email, passwordHash)
+	id, err := us.Store.CreateUser(ctx, name, email, hash)
 	if err != nil {
-		var mysqlErr *mysql.MySQLError
-		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return uuid.UUID{}, ErrDuplicatedEmailOrUserName
 		}
 	}
