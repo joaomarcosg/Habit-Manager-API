@@ -7,7 +7,6 @@ package pgstore
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -32,25 +31,18 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UU
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, password_hash, created_at, updated_at
+SELECT id, name, email, password_hash, created_at, updated_at
 FROM users
 WHERE email = $1
 `
 
-type GetUserByEmailRow struct {
-	ID           uuid.UUID `json:"id"`
-	Name         string    `json:"name"`
-	PasswordHash []byte    `json:"password_hash"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
-
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i GetUserByEmailRow
+	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -59,25 +51,18 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, name, password_hash, created_at, updated_at
+SELECT id, name, email, password_hash, created_at, updated_at
 FROM users
 WHERE id = $1
 `
 
-type GetUserByIdRow struct {
-	ID           uuid.UUID `json:"id"`
-	Name         string    `json:"name"`
-	PasswordHash []byte    `json:"password_hash"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
-
-func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (GetUserByIdRow, error) {
+func (q *Queries) GetUserById(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUserById, id)
-	var i GetUserByIdRow
+	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Email,
 		&i.PasswordHash,
 		&i.CreatedAt,
 		&i.UpdatedAt,
