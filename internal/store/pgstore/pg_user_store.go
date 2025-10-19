@@ -1,6 +1,12 @@
 package pgstore
 
-import "github.com/jackc/pgx/v5/pgxpool"
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+)
 
 type PGUserStore struct {
 	Queries *Queries
@@ -12,4 +18,61 @@ func NewPGUserStore(pool *pgxpool.Pool) PGUserStore {
 		Queries: New(pool),
 		Pool:    pool,
 	}
+}
+
+func (pgu *PGUserStore) CreateUser(
+	ctx context.Context,
+	name,
+	email string,
+	password []byte,
+) (uuid.UUID, error) {
+	id, err := pgu.Queries.CreateUser(ctx, CreateUserParams{
+		Name:         name,
+		Email:        email,
+		PasswordHash: password,
+	})
+
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return id, nil
+}
+
+func (pgu *PGUserStore) GetUserByEmail(ctx context.Context, email string) (store.User, error) {
+	user, err := pgu.Queries.GetUserByEmail(ctx, email)
+	if err != nil {
+		return store.User{}, err
+	}
+
+	return store.User{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Createdat: user.CreatedAt,
+		Updatedat: user.UpdatedAt,
+	}, nil
+}
+
+func (pgu *PGUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+	user, err := pgu.Queries.GetUserByEmail(ctx, email)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	return user.ID, nil
+}
+
+func (pgu *PGUserStore) GetUserById(ctx context.Context, id uuid.UUID) (store.User, error) {
+	user, err := pgu.Queries.GetUserById(ctx, id)
+	if err != nil {
+		return store.User{}, err
+	}
+
+	return store.User{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Createdat: user.CreatedAt,
+		Updatedat: user.UpdatedAt,
+	}, nil
 }
