@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 	"golang.org/x/crypto/bcrypt"
@@ -45,4 +46,27 @@ func (us *UserService) CreateUser(
 	}
 
 	return id, nil
+}
+
+func (us *UserService) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+
+	user, err := us.Store.GetUserByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return uuid.UUID{}, ErrInvalidCredentials
+		}
+		return uuid.UUID{}, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return uuid.UUID{}, err
+		}
+
+		return uuid.UUID{}, err
+	}
+
+	return user.ID, nil
+
 }
