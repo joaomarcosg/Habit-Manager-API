@@ -1,7 +1,11 @@
 package api
 
-import "github.com/joaomarcosg/Habit-Manager-API/internal/services"
+import (
+	"github.com/go-chi/chi/v5"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
+)
 
 type Api struct {
+	Router      *chi.Mux
 	UserService services.UserService
 }
