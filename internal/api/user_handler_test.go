@@ -58,4 +58,20 @@ func TestSignupUser(t *testing.T) {
 	rec := httptest.NewRecorder()
 	handler := http.HandlerFunc(api.handleSignupUser)
 	handler.ServeHTTP(rec, req)
+
+	t.Logf("Rec body %s\n", rec.Body.Bytes())
+
+	if rec.Code != http.StatusCreated {
+		t.Errorf("Statuscode differs; got %d | want %d", rec.Code, http.StatusCreated)
+	}
+
+	var resBody map[string]any
+	err = json.Unmarshal(rec.Body.Bytes(), &resBody)
+	if err != nil {
+		t.Fatalf("failed to parse response body:%s\n", err.Error())
+	}
+
+	if _, ok := resBody["user_id"]; !ok {
+		t.Errorf("expected 'user_id' in response, got %q", resBody)
+	}
 }
