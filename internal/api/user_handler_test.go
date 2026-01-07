@@ -1,0 +1,61 @@
+package api
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/google/uuid"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+)
+
+type mockUserStore struct{}
+
+func (m *mockUserStore) CreateUser(
+	ctx context.Context,
+	userName,
+	email string,
+	password []byte,
+) (uuid.UUID, error) {
+	return uuid.New(), nil
+}
+
+func (m *mockUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+	return uuid.UUID{}, nil
+}
+
+func (m *mockUserStore) GetUserByEmail(ctx context.Context, email string) (store.User, error) {
+	return store.User{}, nil
+}
+
+func (m *mockUserStore) GetUserById(ctx context.Context, id uuid.UUID) (store.User, error) {
+	return store.User{}, nil
+}
+
+func TestSignupUser(t *testing.T) {
+	api := Api{
+		UserService: *services.NewUserService(&mockUserStore{}),
+	}
+
+	payload := map[string]any{
+		"user_name": "fulano",
+		"email":     "fulano@email.com",
+		"password":  "fulano@123",
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatal("fail to parse request payload")
+	}
+
+	req := httptest.NewRequest("POST", "/api/v1/users/signupuser", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	rec := httptest.NewRecorder()
+	handler := http.HandlerFunc(api.handleSignupUser)
+	handler.ServeHTTP(rec, req)
+}
