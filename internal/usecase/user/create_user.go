@@ -12,7 +12,7 @@ type CreateUserReq struct {
 	Password string `json:"password"`
 }
 
-func (req *CreateUserReq) Valid(ctx context.Context) validator.Evaluator {
+func (req CreateUserReq) Valid(ctx context.Context) validator.Evaluator {
 	var eval validator.Evaluator
 
 	eval.CheckField(validator.NotBlank(req.Name), "user_name", "this field cannot be empty")
