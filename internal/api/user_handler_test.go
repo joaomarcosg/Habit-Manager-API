@@ -3,11 +3,15 @@ package api
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/alexedwards/scs/v2"
+	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
@@ -74,4 +78,29 @@ func TestSignupUser(t *testing.T) {
 	if _, ok := resBody["user_id"]; !ok {
 		t.Errorf("expected 'user_id' in response, got %q", resBody)
 	}
+}
+
+func TestLoginUser(t *testing.T) {
+
+	gob.Register(uuid.UUID{})
+
+	sessionManager := scs.New()
+	sessionManager.Store = memstore.New()
+	sessionManager.Lifetime = 1 * time.Hour
+
+	api := Api{
+		UserService: *services.NewUserService(&mockUserStore{}),
+		Sessions:    sessionManager,
+	}
+
+	payLoad := map[string]any{
+		"email":    "fulano@email.com",
+		"password": "fulano@123",
+	}
+
+	body, err := json.Marshal(payLoad)
+	if err != nil {
+		t.Fatal("fail to parse request payload")
+	}
+
 }
