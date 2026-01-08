@@ -4,9 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/api"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/store/pgstore"
 	"github.com/joho/godotenv"
 )
 
@@ -32,8 +37,22 @@ func main() {
 	defer pool.Close()
 
 	if err := pool.Ping(ctx); err != nil {
-		log.Fatalf("database did not responsd: %v", err)
+		log.Fatalf("database did not respond: %v", err)
 	}
 
 	log.Println("connected to PostgreSQL!")
+
+	userStore := pgstore.NewPGUserStore(pool)
+
+	api := api.Api{
+		Router:      chi.NewMux(),
+		UserService: *services.NewUserService(&userStore),
+	}
+
+	api.BindRoutes()
+
+	fmt.Println("Starting server on port :3080")
+	if err := http.ListenAndServe(":3080", api.Router); err != nil {
+		panic(err)
+	}
 }
