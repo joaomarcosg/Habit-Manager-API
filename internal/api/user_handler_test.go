@@ -127,3 +127,20 @@ func TestLoginUser(t *testing.T) {
 	}
 
 }
+
+func TestLogoutUser(t *testing.T) {
+
+	gob.Register(uuid.UUID{})
+
+	sessionManager := scs.New()
+	sessionManager.Store = memstore.New()
+	sessionManager.Lifetime = 1 * time.Hour
+
+	api := Api{
+		Sessions: sessionManager,
+	}
+
+	req := httptest.NewRequest("POST", "/api/v1/users/logoutuser", nil)
+	rec := httptest.NewRecorder()
+
+}
