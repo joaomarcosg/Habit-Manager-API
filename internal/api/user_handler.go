@@ -58,4 +58,18 @@ func (api *Api) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	err = api.Sessions.RenewToken(r.Context())
+	if err != nil {
+		jsonutils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
+			"error": "unexpected internal server error",
+		})
+		return
+	}
+
+	api.Sessions.Put(r.Context(), "AuthenticateUserId", id)
+
+	jsonutils.EncodeJson(w, r, http.StatusOK, map[string]any{
+		"message": "logged in sucessfully",
+	})
+
 }
