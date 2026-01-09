@@ -103,4 +103,27 @@ func TestLoginUser(t *testing.T) {
 		t.Fatal("fail to parse request payload")
 	}
 
+	req := httptest.NewRequest("POST", "/api/v1/users/loginuser", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	rec := httptest.NewRecorder()
+	handler := http.HandlerFunc(api.handleLoginUser)
+	handler.ServeHTTP(rec, req)
+
+	t.Logf("Rec body %s\n", rec.Body.Bytes())
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("Statuscode differs; got %d | want %d", rec.Code, http.StatusOK)
+	}
+
+	var resBody map[string]any
+	err = json.Unmarshal(rec.Body.Bytes(), &resBody)
+	if err != nil {
+		t.Fatalf("failed to parse response body:%s\n", err.Error())
+	}
+
+	if resBody["message"] != "logged in sucessfully" {
+		t.Errorf("message differs; got %q | want 'logged in sucessfully'", resBody["message"])
+	}
+
 }
