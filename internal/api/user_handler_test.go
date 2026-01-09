@@ -107,7 +107,7 @@ func TestLoginUser(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	rec := httptest.NewRecorder()
-	handler := http.HandlerFunc(api.handleLoginUser)
+	handler := api.Sessions.LoadAndSave(http.HandlerFunc(api.handleLoginUser))
 	handler.ServeHTTP(rec, req)
 
 	t.Logf("Rec body %s\n", rec.Body.Bytes())
