@@ -3,11 +3,16 @@ INSERT INTO categories ("name")
 VALUES ($1)
 RETURNING id;
 
+-- name: GetCategoryById :one
+SELECT id, name, entries
+FROM categories
+WHERE id = $1;
+
 -- name: GetCategoryByName :one
-SELECT id, name
+SELECT id, name, entries
 FROM categories
 WHERE name = $1;
 
 -- name: DeleteCategory :execresult
-DELETE categories
+DELETE FROM categories
 WHERE category_id = $1;
