@@ -13,6 +13,8 @@ sql:
         overrides:
           - db_type: "pg_catalog.int4"
             go_type: "int"
+          - column: "categories.entries"
+            go_type: "int"
           - db_type: "uuid"
             go_type:
               import: "github.com/google/uuid"
