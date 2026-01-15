@@ -13,6 +13,11 @@ SELECT id, name, entries, created_at, updated_at
 FROM categories
 WHERE name = $1;
 
+-- name: GetCategoryEntries :one
+SELECT entries
+FROM categories
+WHERE name = $1;
+
 -- name: DeleteCategory :execresult
 DELETE FROM categories
 WHERE category_id = $1;
