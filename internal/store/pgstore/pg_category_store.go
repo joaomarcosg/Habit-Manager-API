@@ -45,3 +45,39 @@ func (pgc *PGCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (
 		UpdatedAt: category.UpdatedAt,
 	}, nil
 }
+
+func (pgc *PGCategoryStore) GetCategoryByName(ctx context.Context, name string) (store.Category, error) {
+	category, err := pgc.Queries.GetCategoryByName(ctx, name)
+
+	if err != nil {
+		return store.Category{}, err
+	}
+
+	return store.Category{
+		ID:        category.ID,
+		Name:      category.Name,
+		Entries:   category.Entries,
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
+	}, nil
+}
+
+func (pgc *PGCategoryStore) GetCategoryEntries(ctx context.Context, name string) (store.Category, error) {
+	categoryEntries, err := pgc.Queries.GetCategoryEntries(ctx, name)
+
+	if err != nil {
+		return store.Category{Entries: 0}, err
+	}
+
+	return store.Category{Entries: categoryEntries}, nil
+}
+
+func (pgc *PGCategoryStore) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
+	ok, err := pgc.Queries.DeleteCategory(ctx, id)
+
+	if err != nil {
+		return false, err
+	}
+
+	return ok.Delete(), nil
+}
