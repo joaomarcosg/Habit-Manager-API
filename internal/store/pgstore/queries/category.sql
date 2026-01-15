@@ -20,4 +20,4 @@ WHERE name = $1;
 
 -- name: DeleteCategory :execresult
 DELETE FROM categories
-WHERE category_id = $1;
+WHERE id = $1;
