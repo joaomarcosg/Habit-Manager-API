@@ -8,7 +8,22 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type Category struct {
+	ID        uuid.UUID   `json:"id"`
+	Name      string      `json:"name"`
+	Entries   pgtype.Int4 `json:"entries"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
+}
+
+type Session struct {
+	Token  string    `json:"token"`
+	Data   []byte    `json:"data"`
+	Expiry time.Time `json:"expiry"`
+}
 
 type User struct {
 	ID           uuid.UUID `json:"id"`
