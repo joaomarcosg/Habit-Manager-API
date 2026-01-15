@@ -13,14 +13,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createCategory = `-- name: CreateCategory :execresult
+const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories ("name")
 VALUES ($1)
 RETURNING id
 `
 
-func (q *Queries) CreateCategory(ctx context.Context, name string) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, createCategory, name)
+func (q *Queries) CreateCategory(ctx context.Context, name string) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, createCategory, name)
+	var id uuid.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const deleteCategory = `-- name: DeleteCategory :execresult
