@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createCategory = `-- name: CreateCategory :one
@@ -79,9 +78,9 @@ FROM categories
 WHERE name = $1
 `
 
-func (q *Queries) GetCategoryEntries(ctx context.Context, name string) (pgtype.Int4, error) {
+func (q *Queries) GetCategoryEntries(ctx context.Context, name string) (int, error) {
 	row := q.db.QueryRow(ctx, getCategoryEntries, name)
-	var entries pgtype.Int4
+	var entries int
 	err := row.Scan(&entries)
 	return entries, err
 }
