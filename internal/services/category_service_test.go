@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
-	"github.com/magiconair/properties/assert"
 	"github.com/stretchr/testify/assert"
 )
 
