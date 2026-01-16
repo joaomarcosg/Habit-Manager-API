@@ -2,9 +2,12 @@ package services
 
 import (
 	"context"
+	"testing"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockCategoryStore struct{}
@@ -28,4 +31,17 @@ func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string)
 
 func (m *MockCategoryStore) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
 	return true, nil
+}
+
+func TestCreateCategory(t *testing.T) {
+	mockStore := MockCategoryStore{}
+	categoryService := NewCategoryService(&mockStore)
+
+	categoryID := uuid.New()
+
+	id, err := categoryService.Store.CreateCategory(context.Background(), "Health")
+
+	assert.NoError(t, err)
+	assert.Equal(t, categoryID, id)
+
 }
