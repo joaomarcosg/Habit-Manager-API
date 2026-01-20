@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
@@ -17,7 +18,13 @@ func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uu
 }
 
 func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (store.Category, error) {
-	return store.Category{}, nil
+	return store.Category{
+		ID:        id,
+		Name:      "Health",
+		Entries:   1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}, nil
 }
 
 func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (store.Category, error) {
@@ -40,5 +47,19 @@ func TestCreateCategory(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEqual(t, uuid.Nil, id)
+
+}
+
+func TestGetCategoryById(t *testing.T) {
+	mockStore := MockCategoryStore{}
+	categoryService := NewCategoryService(&mockStore)
+
+	ctx := context.Background()
+	id := uuid.New()
+
+	category, err := categoryService.Store.GetCategoryById(ctx, id)
+
+	assert.NoError(t, err)
+	assert.Equal(t, id, category.ID)
 
 }
