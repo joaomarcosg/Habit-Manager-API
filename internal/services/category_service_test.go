@@ -56,10 +56,12 @@ func TestGetCategoryById(t *testing.T) {
 
 	ctx := context.Background()
 	id := uuid.New()
+	emptyCategory := store.Category{}
 
 	category, err := categoryService.Store.GetCategoryById(ctx, id)
 
 	assert.NoError(t, err)
 	assert.Equal(t, id, category.ID)
+	assert.NotEqual(t, emptyCategory, category)
 
 }
