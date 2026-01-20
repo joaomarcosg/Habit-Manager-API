@@ -105,3 +105,22 @@ func TestGetCategoryEntries(t *testing.T) {
 	assert.Equal(t, 1, categoryEntries.Entries)
 
 }
+
+func TestDeleteCategory(t *testing.T) {
+	mockStore := MockCategoryStore{}
+	categoryService := NewCategoryService(&mockStore)
+
+	ctx := context.Background()
+	id := uuid.New()
+
+	category, err := categoryService.Store.GetCategoryById(ctx, id)
+	if category.ID != id {
+		t.Errorf("%s not found", category.ID)
+	}
+
+	ok, err := categoryService.Store.DeleteCategory(ctx, id)
+
+	assert.NoError(t, err)
+	assert.Equal(t, ok, true)
+
+}
