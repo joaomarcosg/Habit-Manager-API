@@ -36,11 +36,9 @@ func TestCreateCategory(t *testing.T) {
 	mockStore := MockCategoryStore{}
 	categoryService := NewCategoryService(&mockStore)
 
-	categoryID := uuid.New()
-
 	id, err := categoryService.Store.CreateCategory(context.Background(), "Health")
 
 	assert.NoError(t, err)
-	assert.Equal(t, categoryID, id)
+	assert.NotEqual(t, uuid.Nil, id)
 
 }
