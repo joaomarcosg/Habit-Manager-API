@@ -73,3 +73,17 @@ func (cs *CategoryService) GetCategoryByName(ctx context.Context, name string) (
 	}, nil
 
 }
+
+func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) (store.Category, error) {
+	categoryEntries, err := cs.Store.GetCategoryByName(ctx, name)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return store.Category{}, ErrCategoryNotFound
+		}
+		return store.Category{}, err
+	}
+
+	return store.Category{
+		Entries: categoryEntries.Entries,
+	}, nil
+}
