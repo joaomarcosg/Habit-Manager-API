@@ -54,3 +54,22 @@ func (cs *CategoryService) GetCategoryById(ctx context.Context, id uuid.UUID) (s
 		UpdatedAt: category.UpdatedAt,
 	}, nil
 }
+
+func (cs *CategoryService) GetCategoryByName(ctx context.Context, name string) (store.Category, error) {
+	category, err := cs.Store.GetCategoryByName(ctx, name)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return store.Category{}, ErrCategoryNotFound
+		}
+		return store.Category{}, err
+	}
+
+	return store.Category{
+		ID:        category.ID,
+		Name:      category.Name,
+		Entries:   category.Entries,
+		CreatedAt: category.CreatedAt,
+		UpdatedAt: category.UpdatedAt,
+	}, nil
+
+}
