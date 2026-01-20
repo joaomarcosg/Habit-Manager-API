@@ -26,7 +26,7 @@ func (cs *CategoryService) CreateCategory(ctx context.Context, name string) (uui
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return uuid.UUID{}, err
+			return uuid.UUID{}, ErrDuplicateCategoryName
 		}
 	}
 
