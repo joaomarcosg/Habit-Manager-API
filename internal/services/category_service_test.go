@@ -39,7 +39,9 @@ func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) 
 }
 
 func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (store.Category, error) {
-	return store.Category{}, nil
+	return store.Category{
+		Entries: 1,
+	}, nil
 }
 
 func (m *MockCategoryStore) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
@@ -86,4 +88,20 @@ func TestGetCategoryByName(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEqual(t, emptyCategory, category)
 	assert.Equal(t, name, category.Name)
+}
+
+func TestGetCategoryEntries(t *testing.T) {
+	mockStore := MockCategoryStore{}
+	categoryService := NewCategoryService(&mockStore)
+
+	ctx := context.Background()
+	name := "Health"
+	emptyCategory := store.Category{}
+
+	categoryEntries, err := categoryService.GetCategoryByName(ctx, name)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, emptyCategory, categoryEntries)
+	assert.Equal(t, 1, categoryEntries.Entries)
+
 }
