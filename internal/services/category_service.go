@@ -13,6 +13,7 @@ import (
 var (
 	ErrDuplicateCategoryName = errors.New("category name already exists")
 	ErrCategoryNotFound      = errors.New("category not found")
+	ErrCategoryInUse         = errors.New("category is in use")
 )
 
 type CategoryService struct {
@@ -86,4 +87,25 @@ func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) 
 	return store.Category{
 		Entries: categoryEntries.Entries,
 	}, nil
+}
+
+func (cs *CategoryService) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
+	category, err := cs.Store.GetCategoryById(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, ErrCategoryNotFound
+		}
+		return false, err
+	}
+
+	ok, err := cs.Store.DeleteCategory(ctx, category.ID)
+	var pgErr *pgconn.PgError
+	if err != nil {
+		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+			return false, ErrCategoryInUse
+		}
+	}
+
+	return ok, nil
+
 }
