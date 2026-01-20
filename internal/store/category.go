@@ -19,6 +19,5 @@ type CategoryStore interface {
 	CreateCategory(ctx context.Context, name string) (uuid.UUID, error)
 	GetCategoryById(ctx context.Context, id uuid.UUID) (Category, error)
 	GetCategoryByName(ctx context.Context, name string) (Category, error)
-	GetCategoryEntries(ctx context.Context, name string) (Category, error)
 	DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error)
 }
