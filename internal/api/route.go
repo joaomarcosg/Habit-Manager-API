@@ -31,6 +31,13 @@ func (api *Api) BindRoutes() {
 				})
 
 			})
+
+			r.Route("/categories", func(r chi.Router) {
+				r.Group(func(r chi.Router) {
+					r.Use(api.AuthMiddleware)
+					r.Post("/", api.handleCreateCategory)
+				})
+			})
 		})
 	})
 }
