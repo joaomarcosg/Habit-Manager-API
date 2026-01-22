@@ -15,7 +15,12 @@ import (
 type MockCategoryStore struct{}
 
 func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uuid.UUID, error) {
-	return uuid.New(), nil
+	category := store.Category{
+		ID:   uuid.New(),
+		Name: name,
+	}
+
+	return category.ID, nil
 }
 
 func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (store.Category, error) {
@@ -34,7 +39,7 @@ func TestCreateCategory(t *testing.T) {
 	api := Api{}
 
 	payLoad := map[string]any{
-		"name": "Health",
+		"category_name": "Health",
 	}
 
 	body, err := json.Marshal(payLoad)
@@ -42,7 +47,7 @@ func TestCreateCategory(t *testing.T) {
 		t.Fatal("fail to parse request payload")
 	}
 
-	req := httptest.NewRequest("POST", "api/v1/categories", bytes.NewReader(body))
+	req := httptest.NewRequest("POST", "/api/v1/categories/", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	rec := httptest.NewRecorder()
