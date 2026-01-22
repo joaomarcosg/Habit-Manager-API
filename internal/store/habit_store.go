@@ -1,6 +1,9 @@
 package store
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type WeekDay string
 
@@ -23,4 +26,21 @@ type Habit struct {
 	StartDate   time.Time `json:"start_date"`
 	TargetDate  time.Time `json:"target_date"`
 	Priority    int       `json:"priority"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type HabitStore interface {
+	CreateHabit(
+		ctx context.Context,
+		name string,
+		category Category,
+		description string,
+		frequency []WeekDay,
+		startDate,
+		targetDate time.Time,
+		priority int,
+	) (bool, error)
+	GetHabitByName(ctx context.Context, name string) (Habit, error)
+	DeleteHabit(ctx context.Context, name string) (bool, error)
 }
