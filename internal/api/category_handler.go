@@ -30,7 +30,7 @@ func (api *Api) handleCreateCategory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = jsonutils.EncodeJson(w, r, http.StatusCreated, map[string]any{
-		"user_id": id,
+		"category_id": id,
 	})
 
 }
