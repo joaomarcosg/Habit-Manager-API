@@ -3,12 +3,17 @@ package api
 import (
 	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
+	"github.com/alexedwards/scs/v2"
+	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/google/uuid"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 )
 
@@ -36,7 +41,17 @@ func (m *MockCategoryStore) DeleteCategory(ctx context.Context, id uuid.UUID) (b
 }
 
 func TestCreateCategory(t *testing.T) {
-	api := Api{}
+
+	gob.Register(uuid.UUID{})
+
+	sessionManager := scs.New()
+	sessionManager.Store = memstore.New()
+	sessionManager.Lifetime = 1 * time.Hour
+
+	api := Api{
+		CategoryService: *services.NewCategoryService(&MockCategoryStore{}),
+		Sessions:        sessionManager,
+	}
 
 	payLoad := map[string]any{
 		"category_name": "Health",
@@ -49,9 +64,16 @@ func TestCreateCategory(t *testing.T) {
 
 	req := httptest.NewRequest("POST", "/api/v1/categories/", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-
 	rec := httptest.NewRecorder()
-	handler := http.HandlerFunc(api.handleCreateCategory)
+
+	ctx, _ := sessionManager.Load(req.Context(), "")
+
+	userID := uuid.New()
+	sessionManager.Put(ctx, "AuthenticateUserId", userID)
+
+	req = req.WithContext(ctx)
+
+	handler := sessionManager.LoadAndSave(http.HandlerFunc(api.handleCreateCategory))
 	handler.ServeHTTP(rec, req)
 
 	t.Logf("Rec body %s\n", rec.Body.Bytes())
