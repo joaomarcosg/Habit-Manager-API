@@ -18,14 +18,15 @@ SELECT * FROM habits WHERE id = $1;
 SELECT * FROM habits WHERE name = $1;
 
 -- name: UpdateHabit :execresult
-UPDATE habits SET (
-    "name",
-    "category",
-    "description",
-    "frequency",
-    "start_date",
-    "target_date",
-    "priority"
+UPDATE habits
+SET (
+    "name" = $1,
+    "category" = $2,
+    "description" = $3
+    "frequency" = $4
+    "start_date" = $5,
+    "target_date" = $6
+    "priority" = $7
 )
 WHERE id = $1;
 
