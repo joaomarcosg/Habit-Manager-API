@@ -26,7 +26,8 @@ UPDATE habits SET (
     "start_date",
     "target_date",
     "priority"
-) WHERE id = $1;
+)
+WHERE id = $1;
 
 -- name: DeleteHabit :execresult
 DELETE FROM habits
