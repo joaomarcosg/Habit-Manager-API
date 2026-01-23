@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type WeekDay string
@@ -18,7 +20,7 @@ const (
 )
 
 type Habit struct {
-	ID          int       `json:"id"`
+	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"habit_name"`
 	Category    Category  `json:"habit_category"`
 	Description string    `json:"description"`
@@ -40,7 +42,7 @@ type HabitStore interface {
 		startDate,
 		targetDate time.Time,
 		priority int,
-	) (bool, error)
+	) (uuid.UUID, error)
 	GetHabitByName(ctx context.Context, name string) (Habit, error)
 	DeleteHabit(ctx context.Context, name string) (bool, error)
 }
