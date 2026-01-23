@@ -43,6 +43,16 @@ type HabitStore interface {
 		targetDate time.Time,
 		priority int,
 	) (uuid.UUID, error)
+	GetHabitById(ctx context.Context, id uuid.UUID) (Habit, error)
 	GetHabitByName(ctx context.Context, name string) (Habit, error)
+	UpdateHabit(
+		ctx context.Context,
+		name string,
+		category Category,
+		description string,
+		frequency []WeekDay,
+		startDate,
+		targetDate time.Time,
+	) (Habit, error)
 	DeleteHabit(ctx context.Context, name string) (bool, error)
 }
