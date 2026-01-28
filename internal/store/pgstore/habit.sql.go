@@ -28,13 +28,13 @@ RETURNING id
 `
 
 type CreateHabitParams struct {
-	Name        string      `json:"name"`
-	Category    string      `json:"category"`
-	Description string      `json:"description"`
-	Frequency   []Weekday   `json:"frequency"`
-	StartDate   pgtype.Date `json:"start_date"`
-	TargetDate  pgtype.Date `json:"target_date"`
-	Priority    int16       `json:"priority"`
+	Name        string             `json:"name"`
+	Category    string             `json:"category"`
+	Description string             `json:"description"`
+	Frequency   []Weekday          `json:"frequency"`
+	StartDate   pgtype.Timestamptz `json:"start_date"`
+	TargetDate  pgtype.Timestamptz `json:"target_date"`
+	Priority    int16              `json:"priority"`
 }
 
 func (q *Queries) CreateHabit(ctx context.Context, arg CreateHabitParams) (uuid.UUID, error) {
@@ -108,15 +108,15 @@ func (q *Queries) GetHabitByName(ctx context.Context, name string) (Habit, error
 const updateHabit = `-- name: UpdateHabit :one
 UPDATE habits
 SET
-    name = COALESCE($2, name),
-    category = COALESCE($3, category),
-    description = COALESCE($4, description),
-    frequency = COALESCE($5, frequency),
-    start_date = COALESCE($6, start_date),
-    target_date = COALESCE($7, target_date),
-    priority = COALESCE($8, priority),
-    updated_at = NOW()
-WHERE id = $1
+  name        = COALESCE($1, name),
+  category    = COALESCE($2, category),
+  description = COALESCE($3, description),
+  frequency   = COALESCE($4, frequency),
+  start_date  = COALESCE($5, start_date),
+  target_date = COALESCE($6, target_date),
+  priority    = COALESCE($7, priority),
+  updated_at  = NOW()
+WHERE id = $8
 RETURNING
 id,
 name,
@@ -131,19 +131,18 @@ updated_at
 `
 
 type UpdateHabitParams struct {
-	ID          uuid.UUID   `json:"id"`
-	Name        string      `json:"name"`
-	Category    string      `json:"category"`
-	Description string      `json:"description"`
-	Frequency   []Weekday   `json:"frequency"`
-	StartDate   pgtype.Date `json:"start_date"`
-	TargetDate  pgtype.Date `json:"target_date"`
-	Priority    int16       `json:"priority"`
+	Name        pgtype.Text        `json:"name"`
+	Category    pgtype.Text        `json:"category"`
+	Description pgtype.Text        `json:"description"`
+	Frequency   []Weekday          `json:"frequency"`
+	StartDate   pgtype.Timestamptz `json:"start_date"`
+	TargetDate  pgtype.Timestamptz `json:"target_date"`
+	Priority    pgtype.Int2        `json:"priority"`
+	ID          uuid.UUID          `json:"id"`
 }
 
 func (q *Queries) UpdateHabit(ctx context.Context, arg UpdateHabitParams) (Habit, error) {
 	row := q.db.QueryRow(ctx, updateHabit,
-		arg.ID,
 		arg.Name,
 		arg.Category,
 		arg.Description,
@@ -151,6 +150,7 @@ func (q *Queries) UpdateHabit(ctx context.Context, arg UpdateHabitParams) (Habit
 		arg.StartDate,
 		arg.TargetDate,
 		arg.Priority,
+		arg.ID,
 	)
 	var i Habit
 	err := row.Scan(

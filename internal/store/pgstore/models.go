@@ -69,16 +69,16 @@ type Category struct {
 }
 
 type Habit struct {
-	ID          uuid.UUID   `json:"id"`
-	Name        string      `json:"name"`
-	Category    string      `json:"category"`
-	Description string      `json:"description"`
-	Frequency   []Weekday   `json:"frequency"`
-	StartDate   pgtype.Date `json:"start_date"`
-	TargetDate  pgtype.Date `json:"target_date"`
-	Priority    int16       `json:"priority"`
-	CreatedAt   time.Time   `json:"created_at"`
-	UpdatedAt   time.Time   `json:"updated_at"`
+	ID          uuid.UUID          `json:"id"`
+	Name        string             `json:"name"`
+	Category    string             `json:"category"`
+	Description string             `json:"description"`
+	Frequency   []Weekday          `json:"frequency"`
+	StartDate   pgtype.Timestamptz `json:"start_date"`
+	TargetDate  pgtype.Timestamptz `json:"target_date"`
+	Priority    int16              `json:"priority"`
+	CreatedAt   time.Time          `json:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at"`
 }
 
 type Session struct {
