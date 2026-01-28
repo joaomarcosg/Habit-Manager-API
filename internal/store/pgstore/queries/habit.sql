@@ -17,18 +17,29 @@ SELECT * FROM habits WHERE id = $1;
 -- name: GetHabitByName :one
 SELECT * FROM habits WHERE name = $1;
 
--- name: UpdateHabit :execresult
+-- name: UpdateHabit :one
 UPDATE habits
-SET (
-    "name" = $1,
-    "category" = $2,
-    "description" = $3
-    "frequency" = $4
-    "start_date" = $5,
-    "target_date" = $6
-    "priority" = $7
-)
-WHERE id = $1;
+SET
+    name = COALESCE($2, name),
+    category = COALESCE($3, category),
+    description = COALESCE($4, description),
+    frequency = COALESCE($5, frequency),
+    start_date = COALESCE($6, start_date),
+    target_date = COALESCE($7, target_date),
+    priority = COALESCE($8, priority),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING
+id,
+name,
+category,
+description,
+frequency,
+start_date,
+target_date,
+priority,
+created_at,
+updated_at;
 
 -- name: DeleteHabit :execresult
 DELETE FROM habits
