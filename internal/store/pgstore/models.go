@@ -5,10 +5,60 @@
 package pgstore
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type Weekday string
+
+const (
+	WeekdayMonday    Weekday = "monday"
+	WeekdayTuesday   Weekday = "tuesday"
+	WeekdayWednesday Weekday = "wednesday"
+	WeekdayThursday  Weekday = "thursday"
+	WeekdayFriday    Weekday = "friday"
+	WeekdaySaturnday Weekday = "saturnday"
+	WeekdaySunday    Weekday = "sunday"
+)
+
+func (e *Weekday) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Weekday(s)
+	case string:
+		*e = Weekday(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Weekday: %T", src)
+	}
+	return nil
+}
+
+type NullWeekday struct {
+	Weekday Weekday `json:"weekday"`
+	Valid   bool    `json:"valid"` // Valid is true if Weekday is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWeekday) Scan(value interface{}) error {
+	if value == nil {
+		ns.Weekday, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Weekday.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWeekday) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Weekday), nil
+}
 
 type Category struct {
 	ID        uuid.UUID `json:"id"`
@@ -16,6 +66,19 @@ type Category struct {
 	Entries   int       `json:"entries"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Habit struct {
+	ID          uuid.UUID   `json:"id"`
+	Name        string      `json:"name"`
+	Category    string      `json:"category"`
+	Description string      `json:"description"`
+	Frequency   []Weekday   `json:"frequency"`
+	StartDate   pgtype.Date `json:"start_date"`
+	TargetDate  pgtype.Date `json:"target_date"`
+	Priority    int16       `json:"priority"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
 type Session struct {
