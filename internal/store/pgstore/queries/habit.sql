@@ -20,15 +20,15 @@ SELECT * FROM habits WHERE name = $1;
 -- name: UpdateHabit :one
 UPDATE habits
 SET
-    name = COALESCE($2, name),
-    category = COALESCE($3, category),
-    description = COALESCE($4, description),
-    frequency = COALESCE($5, frequency),
-    start_date = COALESCE($6, start_date),
-    target_date = COALESCE($7, target_date),
-    priority = COALESCE($8, priority),
-    updated_at = NOW()
-WHERE id = $1
+  name        = COALESCE(sqlc.narg(name), name),
+  category    = COALESCE(sqlc.narg(category), category),
+  description = COALESCE(sqlc.narg(description), description),
+  frequency   = COALESCE(sqlc.narg(frequency), frequency),
+  start_date  = COALESCE(sqlc.narg(start_date), start_date),
+  target_date = COALESCE(sqlc.narg(target_date), target_date),
+  priority    = COALESCE(sqlc.narg(priority), priority),
+  updated_at  = NOW()
+WHERE id = sqlc.arg(id)
 RETURNING
 id,
 name,
