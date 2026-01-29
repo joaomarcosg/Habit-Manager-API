@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,6 +18,13 @@ func NewPGHabitStore(pool *pgxpool.Pool) PGHabitStore {
 	return PGHabitStore{
 		Queries: New(pool),
 		Pool:    pool,
+	}
+}
+
+func toPgTimestamptz(t time.Time) pgtype.Timestamptz {
+	return pgtype.Timestamptz{
+		Time:  t,
+		Valid: true,
 	}
 }
 
@@ -35,8 +43,8 @@ func (pgh *PGHabitStore) CreateHabit(
 		Category:    category.Name,
 		Description: description,
 		Frequency:   frequency,
-		StartDate:   startDate,
-		TargetDate:  targetDate,
+		StartDate:   toPgTimestamptz(startDate),
+		TargetDate:  toPgTimestamptz(targetDate),
 		Priority:    int16(priority),
 	})
 
