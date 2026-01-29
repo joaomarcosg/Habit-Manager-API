@@ -9,21 +9,22 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createHabit = `-- name: CreateHabit :one
 INSERT INTO habits (
-    "name",
-    "category",
-    "description",
-    "frequency",
-    "start_date",
-    "target_date",
-    "priority"
+    name,
+    category,
+    description,
+    frequency,
+    start_date,
+    target_date,
+    priority,
+    created_at,
+    updated_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
 RETURNING id
 `
 
@@ -52,17 +53,32 @@ func (q *Queries) CreateHabit(ctx context.Context, arg CreateHabitParams) (uuid.
 	return id, err
 }
 
-const deleteHabit = `-- name: DeleteHabit :execresult
+const deleteHabit = `-- name: DeleteHabit :one
 DELETE FROM habits
 WHERE id = $1
+RETURNING id
 `
 
-func (q *Queries) DeleteHabit(ctx context.Context, id uuid.UUID) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, deleteHabit, id)
+func (q *Queries) DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, deleteHabit, id)
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getHabitById = `-- name: GetHabitById :one
-SELECT id, name, category, description, frequency, start_date, target_date, priority, created_at, updated_at FROM habits WHERE id = $1
+SELECT
+  id,
+  name,
+  category,
+  description,
+  frequency,
+  start_date,
+  target_date,
+  priority,
+  created_at,
+  updated_at
+FROM habits
+WHERE id = $1
 `
 
 func (q *Queries) GetHabitById(ctx context.Context, id uuid.UUID) (Habit, error) {
@@ -84,7 +100,19 @@ func (q *Queries) GetHabitById(ctx context.Context, id uuid.UUID) (Habit, error)
 }
 
 const getHabitByName = `-- name: GetHabitByName :one
-SELECT id, name, category, description, frequency, start_date, target_date, priority, created_at, updated_at FROM habits WHERE name = $1
+SELECT
+  id,
+  name,
+  category,
+  description,
+  frequency,
+  start_date,
+  target_date,
+  priority,
+  created_at,
+  updated_at
+FROM habits
+WHERE name = $1
 `
 
 func (q *Queries) GetHabitByName(ctx context.Context, name string) (Habit, error) {
