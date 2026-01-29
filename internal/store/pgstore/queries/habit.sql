@@ -1,21 +1,47 @@
 -- name: CreateHabit :one
 INSERT INTO habits (
-    "name",
-    "category",
-    "description",
-    "frequency",
-    "start_date",
-    "target_date",
-    "priority"
+    name,
+    category,
+    description,
+    frequency,
+    start_date,
+    target_date,
+    priority,
+    created_at,
+    updated_at
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
 RETURNING id;
 
 -- name: GetHabitById :one
-SELECT * FROM habits WHERE id = $1;
+SELECT
+  id,
+  name,
+  category,
+  description,
+  frequency,
+  start_date,
+  target_date,
+  priority,
+  created_at,
+  updated_at
+FROM habits
+WHERE id = $1;
 
 -- name: GetHabitByName :one
-SELECT * FROM habits WHERE name = $1;
+SELECT
+  id,
+  name,
+  category,
+  description,
+  frequency,
+  start_date,
+  target_date,
+  priority,
+  created_at,
+  updated_at
+FROM habits
+WHERE name = $1;
 
 -- name: UpdateHabit :one
 UPDATE habits
@@ -41,6 +67,7 @@ priority,
 created_at,
 updated_at;
 
--- name: DeleteHabit :execresult
+-- name: DeleteHabit :one
 DELETE FROM habits
-WHERE id = $1;
+WHERE id = $1
+RETURNING id;
