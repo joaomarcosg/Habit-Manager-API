@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 )
 
 type PGHabitStore struct {
@@ -26,6 +27,16 @@ func toPgTimestamptz(t time.Time) pgtype.Timestamptz {
 		Time:  t,
 		Valid: true,
 	}
+}
+
+func toDomainWeekDays(dbDays []Weekday) []store.WeekDay {
+	days := make([]store.WeekDay, 0, len(dbDays))
+
+	for _, d := range dbDays {
+		days = append(days, store.WeekDay(d))
+	}
+
+	return days
 }
 
 func (pgh *PGHabitStore) CreateHabit(
@@ -53,4 +64,25 @@ func (pgh *PGHabitStore) CreateHabit(
 	}
 
 	return id, nil
+}
+
+func (pgh *PGHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (store.Habit, error) {
+	habit, err := pgh.Queries.GetHabitById(ctx, id)
+
+	if err != nil {
+		return store.Habit{}, err
+	}
+
+	return store.Habit{
+		ID:          habit.ID,
+		Name:        habit.Name,
+		Category:    habit.Category,
+		Description: habit.Description,
+		Frequency:   toDomainWeekDays(habit.Frequency),
+		StartDate:   habit.StartDate.Time,
+		TargetDate:  habit.TargetDate.Time,
+		Priority:    int(habit.Priority),
+		CreatedAt:   habit.CreatedAt,
+		UpdatedAt:   habit.UpdatedAt,
+	}, nil
 }
