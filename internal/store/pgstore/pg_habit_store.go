@@ -86,3 +86,51 @@ func (pgh *PGHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (store.
 		UpdatedAt:   habit.UpdatedAt,
 	}, nil
 }
+
+func (pgh *PGHabitStore) GetHabitByName(ctx context.Context, name string) (store.Habit, error) {
+	habit, err := pgh.Queries.GetHabitByName(ctx, name)
+
+	if err != nil {
+		return store.Habit{}, err
+	}
+
+	return store.Habit{
+		ID:          habit.ID,
+		Name:        habit.Name,
+		Category:    habit.Category,
+		Description: habit.Description,
+		Frequency:   toDomainWeekDays(habit.Frequency),
+		StartDate:   habit.StartDate.Time,
+		TargetDate:  habit.TargetDate.Time,
+		Priority:    int(habit.Priority),
+		CreatedAt:   habit.CreatedAt,
+		UpdatedAt:   habit.UpdatedAt,
+	}, nil
+}
+
+func (pgh *PGHabitStore) UpdateHabit(
+	ctx context.Context,
+	name,
+	category,
+	description string,
+	frequency []Weekday,
+	startDate,
+	targetDate time.Time,
+	priority int,
+) (store.Habit, error) {
+	updatedHabit, err := pgh.Queries.UpdateHabit(ctx, UpdateHabitParams{
+		Name:        name,
+		Category:    category,
+		Description: description,
+		Frequency:   frequency,
+		StartDate:   startDate,
+		TargetDate:  targetDate,
+		Priority:    priority,
+	})
+
+	if err != nil {
+		return store.Habit{}, err
+	}
+
+	return store.Habit{}, nil
+}
