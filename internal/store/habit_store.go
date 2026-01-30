@@ -22,7 +22,7 @@ const (
 type Habit struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"habit_name"`
-	Category    Category  `json:"habit_category"`
+	Category    string    `json:"habit_category"`
 	Description string    `json:"description"`
 	Frequency   []WeekDay `json:"frequency"`
 	StartDate   time.Time `json:"start_date"`
