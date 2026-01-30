@@ -42,7 +42,7 @@ func toDomainWeekDays(dbDays []Weekday) []store.WeekDay {
 func (pgh *PGHabitStore) CreateHabit(
 	ctx context.Context,
 	name string,
-	category Category,
+	category,
 	description string,
 	frequency []Weekday,
 	startDate,
@@ -51,7 +51,7 @@ func (pgh *PGHabitStore) CreateHabit(
 ) (uuid.UUID, error) {
 	id, err := pgh.Queries.CreateHabit(ctx, CreateHabitParams{
 		Name:        name,
-		Category:    category.Name,
+		Category:    category,
 		Description: description,
 		Frequency:   frequency,
 		StartDate:   toPgTimestamptz(startDate),
