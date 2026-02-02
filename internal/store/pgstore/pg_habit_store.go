@@ -39,9 +39,31 @@ func toDomainWeekDays(dbDays []Weekday) []store.WeekDay {
 	return days
 }
 
+func toPgText(s string) pgtype.Text {
+	if s == "" {
+		return pgtype.Text{Valid: false}
+	}
+
+	return pgtype.Text{
+		String: s,
+		Valid:  true,
+	}
+}
+
+func toPgInt(i int) pgtype.Int2 {
+	if i == 0 {
+		return pgtype.Int2{Valid: false}
+	}
+
+	return pgtype.Int2{
+		Int16: int16(i),
+		Valid: true,
+	}
+}
+
 func (pgh *PGHabitStore) CreateHabit(
 	ctx context.Context,
-	name string,
+	name,
 	category,
 	description string,
 	frequency []Weekday,
@@ -119,18 +141,29 @@ func (pgh *PGHabitStore) UpdateHabit(
 	priority int,
 ) (store.Habit, error) {
 	updatedHabit, err := pgh.Queries.UpdateHabit(ctx, UpdateHabitParams{
-		Name:        name,
-		Category:    category,
-		Description: description,
+		Name:        toPgText(name),
+		Category:    toPgText(category),
+		Description: toPgText(description),
 		Frequency:   frequency,
-		StartDate:   startDate,
-		TargetDate:  targetDate,
-		Priority:    priority,
+		StartDate:   toPgTimestamptz(startDate),
+		TargetDate:  toPgTimestamptz(targetDate),
+		Priority:    toPgInt(priority),
 	})
 
 	if err != nil {
 		return store.Habit{}, err
 	}
 
-	return store.Habit{}, nil
+	return store.Habit{
+		ID:          updatedHabit.ID,
+		Name:        updatedHabit.Name,
+		Category:    updatedHabit.Category,
+		Description: updatedHabit.Description,
+		Frequency:   toDomainWeekDays(updatedHabit.Frequency),
+		StartDate:   updatedHabit.StartDate.Time,
+		TargetDate:  updatedHabit.TargetDate.Time,
+		Priority:    int(updatedHabit.Priority),
+		CreatedAt:   updatedHabit.CreatedAt,
+		UpdatedAt:   updatedHabit.UpdatedAt,
+	}, nil
 }
