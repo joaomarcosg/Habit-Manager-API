@@ -54,5 +54,5 @@ type HabitStore interface {
 		startDate,
 		targetDate time.Time,
 	) (Habit, error)
-	DeleteHabit(ctx context.Context, name string) (bool, error)
+	DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 }
