@@ -167,3 +167,13 @@ func (pgh *PGHabitStore) UpdateHabit(
 		UpdatedAt:   updatedHabit.UpdatedAt,
 	}, nil
 }
+
+func (pgh *PGHabitStore) DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	id, err := pgh.Queries.DeleteHabit(ctx, id)
+
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return id, nil
+}
