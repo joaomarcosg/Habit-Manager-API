@@ -35,8 +35,8 @@ type Habit struct {
 type HabitStore interface {
 	CreateHabit(
 		ctx context.Context,
-		name string,
-		category Category,
+		name,
+		category,
 		description string,
 		frequency []WeekDay,
 		startDate,
@@ -47,8 +47,8 @@ type HabitStore interface {
 	GetHabitByName(ctx context.Context, name string) (Habit, error)
 	UpdateHabit(
 		ctx context.Context,
-		name string,
-		category Category,
+		name,
+		category,
 		description string,
 		frequency []WeekDay,
 		startDate,
