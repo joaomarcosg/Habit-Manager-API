@@ -2,10 +2,12 @@ package services
 
 import (
 	"context"
+	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+	"github.com/stretchr/testify/assert"
 )
 
 type MockHabitStore struct{}
@@ -61,25 +63,31 @@ func (m *MockHabitStore) UpdateHabit(
 	category,
 	description string,
 	frequency []store.WeekDay,
-	startDate,
+	startDate time.Time,
 	targetDate time.Time,
-	priority int,
 ) (store.Habit, error) {
-	id := uuid.New()
-	return store.Habit{
-		ID:          id,
-		Name:        name,
-		Category:    category,
-		Description: description,
-		Frequency:   frequency,
-		StartDate:   startDate,
-		TargetDate:  targetDate,
-		Priority:    priority,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}, nil
+	return store.Habit{}, nil
 }
 
 func (m *MockHabitStore) DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
 	return id, nil
+}
+
+func TestCreateHabit(t *testing.T) {
+	mockStore := MockHabitStore{}
+	habitService := NewHabitService(&mockStore)
+
+	id, err := habitService.Store.CreateHabit(
+		context.Background(),
+		"Work out",
+		"Health",
+		"Work out 5 times a week",
+		[]store.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
+		time.Now(),
+		time.Now().Add(7),
+		10,
+	)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, uuid.Nil, id)
 }
