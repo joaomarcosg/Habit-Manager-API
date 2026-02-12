@@ -47,3 +47,15 @@ func MinChars(value string, n int) bool {
 func Matches(value string, rx *regexp.Regexp) bool {
 	return rx.MatchString(value)
 }
+
+func MaxLevel(value int) bool {
+	return value <= 10
+}
+
+func MinLevel(value int) bool {
+	return value >= 1
+}
+
+func NotBlankVector(value []string) bool {
+	return strings.Join(value, "") != ""
+}
