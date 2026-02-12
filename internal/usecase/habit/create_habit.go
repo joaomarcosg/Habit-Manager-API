@@ -25,6 +25,9 @@ func (req CreateHabitReq) Valid(ctx context.Context) validator.Evaluator {
 	eval.CheckField(validator.NotBlank(req.Category), "habit_category", "this field cannot be empty")
 	eval.CheckField(validator.NotBlank(req.Description), "habit_category", "this field cannot be empty")
 	eval.CheckField(validator.MaxChars(req.Description, 150), "description", "this field must be less than 150 chars")
+	eval.CheckField(validator.NotBlankVector(req.Frequency), "frequency", "this field cannot be empty")
+	eval.CheckField(validator.MaxLevel(req.Priority), "priority", "this field must be less than 10")
+	eval.CheckField(validator.MinLevel(req.Priority), "priority", "this field must be greater than 0")
 
 	return eval
 }
