@@ -55,7 +55,3 @@ func MaxLevel(value int) bool {
 func MinLevel(value int) bool {
 	return value >= 1
 }
-
-func NotBlankVector(value []string) bool {
-	return strings.Join(value, "") != ""
-}
