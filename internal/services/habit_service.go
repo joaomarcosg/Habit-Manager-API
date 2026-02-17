@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 )
 
@@ -30,7 +31,7 @@ func (hs *HabitService) CreateHabit(
 	name,
 	category,
 	description string,
-	frequency []store.WeekDay,
+	frequency []domain.WeekDay,
 	startDate,
 	targetDate time.Time,
 	priority int,
