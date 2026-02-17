@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,8 +17,8 @@ func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uu
 	return id, nil
 }
 
-func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (store.Category, error) {
-	return store.Category{
+func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error) {
+	return domain.Category{
 		ID:        id,
 		Name:      "Health",
 		Entries:   1,
@@ -27,9 +27,9 @@ func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (
 	}, nil
 }
 
-func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (store.Category, error) {
+func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
 	id := uuid.New()
-	return store.Category{
+	return domain.Category{
 		ID:        id,
 		Name:      name,
 		Entries:   1,
@@ -38,8 +38,8 @@ func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) 
 	}, nil
 }
 
-func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (store.Category, error) {
-	return store.Category{
+func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (domain.Category, error) {
+	return domain.Category{
 		Entries: 1,
 	}, nil
 }
@@ -65,7 +65,7 @@ func TestGetCategoryById(t *testing.T) {
 
 	ctx := context.Background()
 	id := uuid.New()
-	emptyCategory := store.Category{}
+	emptyCategory := domain.Category{}
 
 	category, err := categoryService.Store.GetCategoryById(ctx, id)
 
@@ -81,7 +81,7 @@ func TestGetCategoryByName(t *testing.T) {
 
 	ctx := context.Background()
 	name := "Health"
-	emptyCategory := store.Category{}
+	emptyCategory := domain.Category{}
 
 	category, err := categoryService.Store.GetCategoryByName(ctx, name)
 
@@ -96,7 +96,7 @@ func TestGetCategoryEntries(t *testing.T) {
 
 	ctx := context.Background()
 	name := "Health"
-	emptyCategory := store.Category{}
+	emptyCategory := domain.Category{}
 
 	categoryEntries, err := categoryService.GetCategoryByName(ctx, name)
 

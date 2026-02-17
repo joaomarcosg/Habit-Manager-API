@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 )
 
@@ -38,16 +39,16 @@ func (cs *CategoryService) CreateCategory(ctx context.Context, name string) (uui
 	return id, nil
 }
 
-func (cs *CategoryService) GetCategoryById(ctx context.Context, id uuid.UUID) (store.Category, error) {
+func (cs *CategoryService) GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error) {
 	category, err := cs.Store.GetCategoryById(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return store.Category{}, ErrCategoryNotFound
+			return domain.Category{}, ErrCategoryNotFound
 		}
-		return store.Category{}, err
+		return domain.Category{}, err
 	}
 
-	return store.Category{
+	return domain.Category{
 		ID:        category.ID,
 		Name:      category.Name,
 		Entries:   category.Entries,
@@ -56,16 +57,16 @@ func (cs *CategoryService) GetCategoryById(ctx context.Context, id uuid.UUID) (s
 	}, nil
 }
 
-func (cs *CategoryService) GetCategoryByName(ctx context.Context, name string) (store.Category, error) {
+func (cs *CategoryService) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
 	category, err := cs.Store.GetCategoryByName(ctx, name)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return store.Category{}, ErrCategoryNotFound
+			return domain.Category{}, ErrCategoryNotFound
 		}
-		return store.Category{}, err
+		return domain.Category{}, err
 	}
 
-	return store.Category{
+	return domain.Category{
 		ID:        category.ID,
 		Name:      category.Name,
 		Entries:   category.Entries,
@@ -75,16 +76,16 @@ func (cs *CategoryService) GetCategoryByName(ctx context.Context, name string) (
 
 }
 
-func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) (store.Category, error) {
+func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) (domain.Category, error) {
 	categoryEntries, err := cs.Store.GetCategoryByName(ctx, name)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return store.Category{}, ErrCategoryNotFound
+			return domain.Category{}, ErrCategoryNotFound
 		}
-		return store.Category{}, err
+		return domain.Category{}, err
 	}
 
-	return store.Category{
+	return domain.Category{
 		Entries: categoryEntries.Entries,
 	}, nil
 }
