@@ -13,8 +13,8 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/google/uuid"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 )
 
 type MockHabitStore struct{}
@@ -25,17 +25,25 @@ func (m *MockHabitStore) DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UU
 }
 
 // GetHabitById implements store.HabitStore.
-func (m *MockHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (store.Habit, error) {
+func (m *MockHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (domain.Habit, error) {
 	panic("unimplemented")
 }
 
 // GetHabitByName implements store.HabitStore.
-func (m *MockHabitStore) GetHabitByName(ctx context.Context, name string) (store.Habit, error) {
+func (m *MockHabitStore) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
 	panic("unimplemented")
 }
 
 // UpdateHabit implements store.HabitStore.
-func (m *MockHabitStore) UpdateHabit(ctx context.Context, name string, category string, description string, frequency []store.WeekDay, startDate time.Time, targetDate time.Time) (store.Habit, error) {
+func (m *MockHabitStore) UpdateHabit(
+	ctx context.Context,
+	name,
+	category,
+	description string,
+	frequency []domain.WeekDay,
+	startDate,
+	targetDate time.Time,
+) (domain.Habit, error) {
 	panic("unimplemented")
 }
 
@@ -44,12 +52,12 @@ func (m *MockHabitStore) CreateHabit(
 	name,
 	category,
 	description string,
-	frequency []store.WeekDay,
+	frequency []domain.WeekDay,
 	startDate,
 	targetDate time.Time,
 	priority int,
 ) (uuid.UUID, error) {
-	habit := store.Habit{
+	habit := domain.Habit{
 		ID:          uuid.New(),
 		Name:        name,
 		Category:    category,
