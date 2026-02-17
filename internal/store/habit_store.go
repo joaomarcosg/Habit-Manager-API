@@ -5,32 +5,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 )
-
-type WeekDay string
-
-const (
-	Monday    WeekDay = "monday"
-	Tuesday   WeekDay = "tuesday"
-	Wednesday WeekDay = "wednesday"
-	Thursday  WeekDay = "thursday"
-	Friday    WeekDay = "friday"
-	Saturday  WeekDay = "saturday"
-	Sunday    WeekDay = "sunday"
-)
-
-type Habit struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"habit_name"`
-	Category    string    `json:"habit_category"`
-	Description string    `json:"description"`
-	Frequency   []WeekDay `json:"frequency"`
-	StartDate   time.Time `json:"start_date"`
-	TargetDate  time.Time `json:"target_date"`
-	Priority    int       `json:"priority"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
 
 type HabitStore interface {
 	CreateHabit(
@@ -38,21 +14,21 @@ type HabitStore interface {
 		name,
 		category,
 		description string,
-		frequency []WeekDay,
+		frequency []domain.WeekDay,
 		startDate,
 		targetDate time.Time,
 		priority int,
 	) (uuid.UUID, error)
-	GetHabitById(ctx context.Context, id uuid.UUID) (Habit, error)
-	GetHabitByName(ctx context.Context, name string) (Habit, error)
+	GetHabitById(ctx context.Context, id uuid.UUID) (domain.Habit, error)
+	GetHabitByName(ctx context.Context, name string) (domain.Habit, error)
 	UpdateHabit(
 		ctx context.Context,
 		name,
 		category,
 		description string,
-		frequency []WeekDay,
+		frequency []domain.WeekDay,
 		startDate,
 		targetDate time.Time,
-	) (Habit, error)
+	) (domain.Habit, error)
 	DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 }
