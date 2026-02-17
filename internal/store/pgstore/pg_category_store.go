@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 )
 
 type PGCategoryStore struct {
@@ -30,14 +30,14 @@ func (pgc *PGCategoryStore) CreateCategory(ctx context.Context, name string) (uu
 	return id, nil
 }
 
-func (pgc *PGCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (store.Category, error) {
+func (pgc *PGCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error) {
 	category, err := pgc.Queries.GetCategoryById(ctx, id)
 
 	if err != nil {
-		return store.Category{}, err
+		return domain.Category{}, err
 	}
 
-	return store.Category{
+	return domain.Category{
 		ID:        category.ID,
 		Name:      category.Name,
 		Entries:   category.Entries,
@@ -46,14 +46,14 @@ func (pgc *PGCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (
 	}, nil
 }
 
-func (pgc *PGCategoryStore) GetCategoryByName(ctx context.Context, name string) (store.Category, error) {
+func (pgc *PGCategoryStore) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
 	category, err := pgc.Queries.GetCategoryByName(ctx, name)
 
 	if err != nil {
-		return store.Category{}, err
+		return domain.Category{}, err
 	}
 
-	return store.Category{
+	return domain.Category{
 		ID:        category.ID,
 		Name:      category.Name,
 		Entries:   category.Entries,
@@ -62,14 +62,14 @@ func (pgc *PGCategoryStore) GetCategoryByName(ctx context.Context, name string) 
 	}, nil
 }
 
-func (pgc *PGCategoryStore) GetCategoryEntries(ctx context.Context, name string) (store.Category, error) {
+func (pgc *PGCategoryStore) GetCategoryEntries(ctx context.Context, name string) (domain.Category, error) {
 	categoryEntries, err := pgc.Queries.GetCategoryEntries(ctx, name)
 
 	if err != nil {
-		return store.Category{Entries: 0}, err
+		return domain.Category{Entries: 0}, err
 	}
 
-	return store.Category{Entries: categoryEntries}, nil
+	return domain.Category{Entries: categoryEntries}, nil
 }
 
 func (pgc *PGCategoryStore) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
