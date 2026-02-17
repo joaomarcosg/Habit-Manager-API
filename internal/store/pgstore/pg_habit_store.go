@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 )
 
 type PGHabitStore struct {
@@ -29,11 +29,11 @@ func toPgTimestamptz(t time.Time) pgtype.Timestamptz {
 	}
 }
 
-func toDomainWeekDays(dbDays []Weekday) []store.WeekDay {
-	days := make([]store.WeekDay, 0, len(dbDays))
+func toDomainWeekDays(dbDays []Weekday) []domain.WeekDay {
+	days := make([]domain.WeekDay, 0, len(dbDays))
 
 	for _, d := range dbDays {
-		days = append(days, store.WeekDay(d))
+		days = append(days, domain.WeekDay(d))
 	}
 
 	return days
@@ -88,14 +88,14 @@ func (pgh *PGHabitStore) CreateHabit(
 	return id, nil
 }
 
-func (pgh *PGHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (store.Habit, error) {
+func (pgh *PGHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (domain.Habit, error) {
 	habit, err := pgh.Queries.GetHabitById(ctx, id)
 
 	if err != nil {
-		return store.Habit{}, err
+		return domain.Habit{}, err
 	}
 
-	return store.Habit{
+	return domain.Habit{
 		ID:          habit.ID,
 		Name:        habit.Name,
 		Category:    habit.Category,
@@ -109,14 +109,14 @@ func (pgh *PGHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (store.
 	}, nil
 }
 
-func (pgh *PGHabitStore) GetHabitByName(ctx context.Context, name string) (store.Habit, error) {
+func (pgh *PGHabitStore) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
 	habit, err := pgh.Queries.GetHabitByName(ctx, name)
 
 	if err != nil {
-		return store.Habit{}, err
+		return domain.Habit{}, err
 	}
 
-	return store.Habit{
+	return domain.Habit{
 		ID:          habit.ID,
 		Name:        habit.Name,
 		Category:    habit.Category,
@@ -139,7 +139,7 @@ func (pgh *PGHabitStore) UpdateHabit(
 	startDate,
 	targetDate time.Time,
 	priority int,
-) (store.Habit, error) {
+) (domain.Habit, error) {
 	updatedHabit, err := pgh.Queries.UpdateHabit(ctx, UpdateHabitParams{
 		Name:        toPgText(name),
 		Category:    toPgText(category),
@@ -151,10 +151,10 @@ func (pgh *PGHabitStore) UpdateHabit(
 	})
 
 	if err != nil {
-		return store.Habit{}, err
+		return domain.Habit{}, err
 	}
 
-	return store.Habit{
+	return domain.Habit{
 		ID:          updatedHabit.ID,
 		Name:        updatedHabit.Name,
 		Category:    updatedHabit.Category,
