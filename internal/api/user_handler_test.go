@@ -13,8 +13,8 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/google/uuid"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 )
 
 type mockUserStore struct{}
@@ -32,12 +32,12 @@ func (m *mockUserStore) AuthenticateUser(ctx context.Context, email, password st
 	return uuid.UUID{}, nil
 }
 
-func (m *mockUserStore) GetUserByEmail(ctx context.Context, email string) (store.User, error) {
-	return store.User{}, nil
+func (m *mockUserStore) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+	return domain.User{}, nil
 }
 
-func (m *mockUserStore) GetUserById(ctx context.Context, id uuid.UUID) (store.User, error) {
-	return store.User{}, nil
+func (m *mockUserStore) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
+	return domain.User{}, nil
 }
 
 func TestSignupUser(t *testing.T) {
