@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 )
 
 type PGUserStore struct {
@@ -39,13 +39,13 @@ func (pgu *PGUserStore) CreateUser(
 	return id, nil
 }
 
-func (pgu *PGUserStore) GetUserByEmail(ctx context.Context, email string) (store.User, error) {
+func (pgu *PGUserStore) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 	user, err := pgu.Queries.GetUserByEmail(ctx, email)
 	if err != nil {
-		return store.User{}, err
+		return domain.User{}, err
 	}
 
-	return store.User{
+	return domain.User{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
@@ -62,13 +62,13 @@ func (pgu *PGUserStore) AuthenticateUser(ctx context.Context, email, password st
 	return user.ID, nil
 }
 
-func (pgu *PGUserStore) GetUserById(ctx context.Context, id uuid.UUID) (store.User, error) {
+func (pgu *PGUserStore) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	user, err := pgu.Queries.GetUserById(ctx, id)
 	if err != nil {
-		return store.User{}, err
+		return domain.User{}, err
 	}
 
-	return store.User{
+	return domain.User{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
