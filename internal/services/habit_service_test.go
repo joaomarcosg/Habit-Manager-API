@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +17,7 @@ func (m *MockHabitStore) CreateHabit(
 	name,
 	category,
 	description string,
-	frequency []store.WeekDay,
+	frequency []domain.WeekDay,
 	startDate,
 	targetDate time.Time,
 	priority int,
@@ -26,13 +26,13 @@ func (m *MockHabitStore) CreateHabit(
 	return id, nil
 }
 
-func (m *MockHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (store.Habit, error) {
-	return store.Habit{
+func (m *MockHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (domain.Habit, error) {
+	return domain.Habit{
 		ID:          id,
 		Name:        "Work out",
 		Category:    "Health",
 		Description: "Work out 5 times a week",
-		Frequency:   []store.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
+		Frequency:   []domain.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
 		StartDate:   time.Now(),
 		TargetDate:  time.Now().Add(7),
 		Priority:    10,
@@ -41,14 +41,14 @@ func (m *MockHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (store.
 	}, nil
 }
 
-func (m *MockHabitStore) GetHabitByName(ctx context.Context, name string) (store.Habit, error) {
+func (m *MockHabitStore) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
 	id := uuid.New()
-	return store.Habit{
+	return domain.Habit{
 		ID:          id,
 		Name:        name,
 		Category:    "Health",
 		Description: "Work out 5 times a week",
-		Frequency:   []store.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
+		Frequency:   []domain.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
 		StartDate:   time.Now(),
 		TargetDate:  time.Now().Add(7),
 		Priority:    10,
@@ -62,11 +62,11 @@ func (m *MockHabitStore) UpdateHabit(
 	name,
 	category,
 	description string,
-	frequency []store.WeekDay,
+	frequency []domain.WeekDay,
 	startDate time.Time,
 	targetDate time.Time,
-) (store.Habit, error) {
-	return store.Habit{}, nil
+) (domain.Habit, error) {
+	return domain.Habit{}, nil
 }
 
 func (m *MockHabitStore) DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
@@ -82,7 +82,7 @@ func TestCreateHabit(t *testing.T) {
 		"Work out",
 		"Health",
 		"Work out 5 times a week",
-		[]store.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
+		[]domain.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
 		time.Now(),
 		time.Now().Add(7),
 		10,
