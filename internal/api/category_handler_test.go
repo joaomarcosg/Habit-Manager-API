@@ -13,14 +13,14 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/google/uuid"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 )
 
 type MockCategoryStore struct{}
 
 func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uuid.UUID, error) {
-	category := store.Category{
+	category := domain.Category{
 		ID:   uuid.New(),
 		Name: name,
 	}
@@ -28,12 +28,12 @@ func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uu
 	return category.ID, nil
 }
 
-func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (store.Category, error) {
-	return store.Category{}, nil
+func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error) {
+	return domain.Category{}, nil
 }
 
-func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (store.Category, error) {
-	return store.Category{}, nil
+func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
+	return domain.Category{}, nil
 }
 
 func (m *MockCategoryStore) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
