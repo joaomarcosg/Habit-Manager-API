@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/gob"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -90,13 +89,10 @@ func TestCreateHabit(t *testing.T) {
 		"frequency": ["monday", "tuesday", "wednesday", "thursday", "friday"],
 		"start_date": "2026-02-13T00:00:00Z",
 		"target_date": "2026-02-20T00:00:00Z",
-		"priority": 10,
+		"priority": 10
 	}`
 
-	body, err := json.Marshal(payLoad)
-	if err != nil {
-		t.Fatal("fail to parse request payload")
-	}
+	body := []byte(payLoad)
 
 	req := httptest.NewRequest("POST", "/api/v1/habits/", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
