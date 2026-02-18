@@ -36,6 +36,7 @@ func (api *Api) BindRoutes() {
 				r.Group(func(r chi.Router) {
 					r.Use(api.AuthMiddleware)
 					r.Post("/", api.handleCreateCategory)
+					r.Post("/getCategory", api.handleGetCategoryByName)
 				})
 			})
 
