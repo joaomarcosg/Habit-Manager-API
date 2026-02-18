@@ -86,3 +86,18 @@ func (us *UserService) GetUserByEmail(ctx context.Context, email string) (domain
 	return user, nil
 
 }
+
+func (us *UserService) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
+
+	user, err := us.Store.GetUserById(ctx, id)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, ErrInvalidCredentials
+		}
+		return domain.User{}, err
+	}
+
+	return user, nil
+
+}
