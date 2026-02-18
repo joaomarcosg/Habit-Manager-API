@@ -81,7 +81,7 @@ func (cs *CategoryService) DeleteCategory(ctx context.Context, name string) (boo
 		return false, err
 	}
 
-	ok, err := cs.Store.DeleteCategory(ctx, category.ID)
+	ok, err := cs.Store.DeleteCategory(ctx, category.Name)
 	var pgErr *pgconn.PgError
 	if err != nil {
 		if errors.As(err, &pgErr) && pgErr.Code == "23503" {

@@ -17,16 +17,6 @@ func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uu
 	return id, nil
 }
 
-func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error) {
-	return domain.Category{
-		ID:        id,
-		Name:      "Health",
-		Entries:   1,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}, nil
-}
-
 func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
 	id := uuid.New()
 	return domain.Category{
@@ -44,7 +34,7 @@ func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string)
 	}, nil
 }
 
-func (m *MockCategoryStore) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
+func (m *MockCategoryStore) DeleteCategory(ctx context.Context, name string) (bool, error) {
 	return true, nil
 }
 
