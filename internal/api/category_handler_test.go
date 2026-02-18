@@ -29,7 +29,13 @@ func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uu
 }
 
 func (m *MockCategoryStore) GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error) {
-	return domain.Category{}, nil
+	return domain.Category{
+		ID:        id,
+		Name:      "Health",
+		Entries:   1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}, nil
 }
 
 func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
@@ -80,5 +86,45 @@ func TestCreateCategory(t *testing.T) {
 
 	if rec.Code != http.StatusCreated {
 		t.Errorf("Statuscode differs; got %d | want %d", rec.Code, http.StatusCreated)
+	}
+}
+
+func TestGetCategoryByName(t *testing.T) {
+
+	gob.Register(uuid.UUID{})
+
+	sessionManager := scs.New()
+	sessionManager.Store = memstore.New()
+	sessionManager.Lifetime = 1 * time.Hour
+
+	api := Api{
+		CategoryService: *services.NewCategoryService(&MockCategoryStore{}),
+		Sessions:        sessionManager,
+	}
+
+	payLoad := `{
+		"category_name": "Health"
+	}`
+
+	body := []byte(payLoad)
+
+	req := httptest.NewRequest("POST", "/api/v1/categories/getCategory", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	ctx, _ := sessionManager.Load(req.Context(), "")
+
+	userID := uuid.New()
+	sessionManager.Put(ctx, "AuthenticateUserId", userID)
+
+	req = req.WithContext(ctx)
+
+	handler := sessionManager.LoadAndSave(http.HandlerFunc(api.handleGetCategoryByName))
+	handler.ServeHTTP(rec, req)
+
+	t.Logf("Rec body %s\n", rec.Body.Bytes())
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("Statuscode differs; got %d | want %d", rec.Code, http.StatusOK)
 	}
 }
