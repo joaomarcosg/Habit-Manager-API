@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"testing"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
+	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,31 +15,66 @@ type MockUserStore struct{}
 func (m *MockUserStore) CreateUser(
 	ctx context.Context,
 	name,
-	email,
-	password string,
+	email string,
+	password []byte,
 ) (uuid.UUID, error) {
-	id, _ := uuid.Parse("123e4567-e89b-12d3-a456-426614174000")
+	id := uuid.New()
 	return id, nil
 }
 
 func (m *MockUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
-	id, _ := uuid.Parse("123e4567-e89b-12d3-a456-426614174000")
+	id := uuid.New()
 	return id, nil
 }
 
 func (m *MockUserStore) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
-	id, _ := uuid.Parse("123e4567-e89b-12d3-a456-426614174000")
+	id := uuid.New()
 
-	hash, _ := bcrypt.GenerateFromPassword([]byte("Senha123456"), bcrypt.DefaultCost)
+	hash, _ := bcrypt.GenerateFromPassword([]byte("Password123456"), bcrypt.DefaultCost)
 
 	return domain.User{
 		ID:       id,
-		Name:     "Fulano",
-		Email:    "fulano@email.com",
+		Name:     "John Doe",
+		Email:    "johndoe@email.com",
 		Password: string(hash),
 	}, nil
 }
 
 func (m *MockUserStore) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	return domain.User{}, nil
+}
+
+func TestCreateUser(t *testing.T) {
+	mockStore := MockUserStore{}
+	userService := NewUserService(&mockStore)
+
+	ctx := context.Background()
+	userName := "John Doe"
+	email := "johndoe@email.com"
+	password, _ := bcrypt.GenerateFromPassword([]byte("Password123456"), bcrypt.DefaultCost)
+
+	id, err := userService.Store.CreateUser(
+		ctx,
+		userName,
+		email,
+		password,
+	)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, uuid.Nil, id)
+
+}
+
+func TestGetUserByEmail(t *testing.T) {
+	mockStore := MockUserStore{}
+	userService := NewUserService(&mockStore)
+
+	ctx := context.Background()
+	email := "johndoe@email.com"
+	emptyUser := domain.User{}
+
+	user, err := userService.Store.GetUserByEmail(ctx, email)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, emptyUser, user)
 }
