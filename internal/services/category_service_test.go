@@ -59,22 +59,6 @@ func TestCreateCategory(t *testing.T) {
 
 }
 
-func TestGetCategoryById(t *testing.T) {
-	mockStore := MockCategoryStore{}
-	categoryService := NewCategoryService(&mockStore)
-
-	ctx := context.Background()
-	id := uuid.New()
-	emptyCategory := domain.Category{}
-
-	category, err := categoryService.Store.GetCategoryById(ctx, id)
-
-	assert.NoError(t, err)
-	assert.Equal(t, id, category.ID)
-	assert.NotEqual(t, emptyCategory, category)
-
-}
-
 func TestGetCategoryByName(t *testing.T) {
 	mockStore := MockCategoryStore{}
 	categoryService := NewCategoryService(&mockStore)
@@ -111,14 +95,14 @@ func TestDeleteCategory(t *testing.T) {
 	categoryService := NewCategoryService(&mockStore)
 
 	ctx := context.Background()
-	id := uuid.New()
+	name := "Health"
 
-	category, err := categoryService.Store.GetCategoryById(ctx, id)
-	if category.ID != id {
+	category, err := categoryService.Store.GetCategoryByName(ctx, name)
+	if category.Name != name {
 		t.Errorf("%s not found", category.ID)
 	}
 
-	ok, err := categoryService.Store.DeleteCategory(ctx, id)
+	ok, err := categoryService.Store.DeleteCategory(ctx, name)
 
 	assert.NoError(t, err)
 	assert.Equal(t, ok, true)
