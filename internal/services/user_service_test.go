@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
@@ -41,7 +42,13 @@ func (m *MockUserStore) GetUserByEmail(ctx context.Context, email string) (domai
 }
 
 func (m *MockUserStore) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	return domain.User{}, nil
+	return domain.User{
+		ID:        id,
+		Name:      "John Doe",
+		Email:     "johndoe@email.com",
+		Createdat: time.Now(),
+		Updatedat: time.Now(),
+	}, nil
 }
 
 func TestCreateUser(t *testing.T) {
@@ -77,4 +84,18 @@ func TestGetUserByEmail(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEqual(t, emptyUser, user)
+}
+
+func TestGetUserById(t *testing.T) {
+	mockStore := MockUserStore{}
+	userService := NewUserService(&mockStore)
+
+	ctx := context.Background()
+	id := uuid.New()
+
+	user, err := userService.Store.GetUserById(ctx, id)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, uuid.Nil, user.ID)
+
 }
