@@ -39,24 +39,6 @@ func (cs *CategoryService) CreateCategory(ctx context.Context, name string) (uui
 	return id, nil
 }
 
-func (cs *CategoryService) GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error) {
-	category, err := cs.Store.GetCategoryById(ctx, id)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Category{}, ErrCategoryNotFound
-		}
-		return domain.Category{}, err
-	}
-
-	return domain.Category{
-		ID:        category.ID,
-		Name:      category.Name,
-		Entries:   category.Entries,
-		CreatedAt: category.CreatedAt,
-		UpdatedAt: category.UpdatedAt,
-	}, nil
-}
-
 func (cs *CategoryService) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
 	category, err := cs.Store.GetCategoryByName(ctx, name)
 	if err != nil {
@@ -90,8 +72,8 @@ func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) 
 	}, nil
 }
 
-func (cs *CategoryService) DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error) {
-	category, err := cs.Store.GetCategoryById(ctx, id)
+func (cs *CategoryService) DeleteCategory(ctx context.Context, name string) (bool, error) {
+	category, err := cs.Store.GetCategoryByName(ctx, name)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return false, ErrCategoryNotFound
