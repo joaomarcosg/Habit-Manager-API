@@ -9,7 +9,6 @@ import (
 
 type CategoryStore interface {
 	CreateCategory(ctx context.Context, name string) (uuid.UUID, error)
-	GetCategoryById(ctx context.Context, id uuid.UUID) (domain.Category, error)
 	GetCategoryByName(ctx context.Context, name string) (domain.Category, error)
 	DeleteCategory(ctx context.Context, id uuid.UUID) (bool, error)
 }
