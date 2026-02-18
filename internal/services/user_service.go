@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -68,5 +69,20 @@ func (us *UserService) AuthenticateUser(ctx context.Context, email, password str
 	}
 
 	return user.ID, nil
+
+}
+
+func (us *UserService) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+
+	user, err := us.Store.GetUserByEmail(ctx, email)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, ErrInvalidCredentials
+		}
+		return domain.User{}, err
+	}
+
+	return user, nil
 
 }
