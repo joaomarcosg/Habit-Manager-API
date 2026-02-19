@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
@@ -58,5 +59,28 @@ func (hs *HabitService) CreateHabit(
 	}
 
 	return id, nil
+
+}
+
+func (hs *HabitService) GetHabitById(ctx context.Context, id uuid.UUID) (domain.Habit, error) {
+
+	habit, err := hs.Store.GetHabitById(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Habit{}, ErrHabitNotFound
+		}
+		return domain.Habit{}, err
+	}
+
+	return domain.Habit{
+		ID:          habit.ID,
+		Name:        habit.Name,
+		Category:    habit.Category,
+		Description: habit.Description,
+		Frequency:   habit.Frequency,
+		StartDate:   habit.StartDate,
+		TargetDate:  habit.TargetDate,
+		Priority:    habit.Priority,
+	}, nil
 
 }
