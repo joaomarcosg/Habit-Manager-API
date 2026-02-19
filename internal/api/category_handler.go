@@ -60,3 +60,29 @@ func (api *Api) handleGetCategoryByName(w http.ResponseWriter, r *http.Request) 
 	})
 
 }
+
+func (api *Api) handleGetCategoryEntries(w http.ResponseWriter, r *http.Request) {
+
+	data, problems, err := jsonutils.DecodeValidJson[category.CreateCategoryReq](r)
+
+	if err != nil {
+		_ = jsonutils.EncodeJson(w, r, http.StatusUnprocessableEntity, problems)
+		return
+	}
+
+	entries, err := api.CategoryService.GetCategoryEntries(r.Context(), data.Name)
+
+	if err != nil {
+		if errors.Is(err, services.ErrCategoryNotFound) {
+			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
+				"error": "category not found",
+			})
+			return
+		}
+	}
+
+	_ = jsonutils.EncodeJson(w, r, http.StatusOK, map[string]any{
+		"category_entries": entries,
+	})
+
+}

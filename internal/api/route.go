@@ -37,6 +37,7 @@ func (api *Api) BindRoutes() {
 					r.Use(api.AuthMiddleware)
 					r.Post("/", api.handleCreateCategory)
 					r.Post("/getCategory", api.handleGetCategoryByName)
+					r.Post("/getCategoryEntries", api.handleGetCategoryEntries)
 				})
 			})
 
