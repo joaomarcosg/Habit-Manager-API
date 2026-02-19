@@ -32,6 +32,11 @@ func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) 
 	return domain.Category{}, nil
 }
 
+func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (int, error) {
+	entries := 1
+	return entries, nil
+}
+
 func (m *MockCategoryStore) DeleteCategory(ctx context.Context, name string) (bool, error) {
 	return true, nil
 }
