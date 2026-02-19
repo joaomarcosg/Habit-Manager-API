@@ -164,3 +164,44 @@ func TestGetCategoryEntries(t *testing.T) {
 	}
 
 }
+
+func TestDeleteCategory(t *testing.T) {
+
+	gob.Register(uuid.UUID{})
+
+	sessionManager := scs.New()
+	sessionManager.Store = memstore.New()
+	sessionManager.Lifetime = 1 * time.Hour
+
+	api := Api{
+		CategoryService: *services.NewCategoryService(&MockCategoryStore{}),
+		Sessions:        sessionManager,
+	}
+
+	payLoad := `{
+		"category_name": "Health"
+	}`
+
+	body := []byte(payLoad)
+
+	req := httptest.NewRequest("POST", "/api/v1/categories/deleteCategory", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	ctx, _ := sessionManager.Load(req.Context(), "")
+
+	userID := uuid.New()
+	sessionManager.Put(ctx, "AuthenticateUserId", userID)
+
+	req = req.WithContext(ctx)
+
+	handler := sessionManager.LoadAndSave(http.HandlerFunc(api.handleDeleteCategory))
+	handler.ServeHTTP(rec, req)
+
+	t.Logf("Rec body %s\n", rec.Body.Bytes())
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("Statuscode differs; got %d | want %d", rec.Code, http.StatusOK)
+	}
+
+}
