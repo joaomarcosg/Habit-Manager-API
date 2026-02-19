@@ -28,10 +28,9 @@ func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) 
 	}, nil
 }
 
-func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (domain.Category, error) {
-	return domain.Category{
-		Entries: 1,
-	}, nil
+func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (int, error) {
+	entries := 1
+	return entries, nil
 }
 
 func (m *MockCategoryStore) DeleteCategory(ctx context.Context, name string) (bool, error) {
