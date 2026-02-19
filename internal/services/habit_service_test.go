@@ -91,3 +91,18 @@ func TestCreateHabit(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEqual(t, uuid.Nil, id)
 }
+
+func TestGetHabitById(t *testing.T) {
+	mockStore := MockHabitStore{}
+	habitService := NewHabitService(&mockStore)
+
+	ctx := context.Background()
+	id := uuid.New()
+	emptyHabit := domain.Habit{}
+
+	habit, err := habitService.Store.GetHabitById(ctx, id)
+
+	assert.NoError(t, err)
+	assert.NotEqual(t, emptyHabit, habit)
+	assert.Equal(t, id, habit.ID)
+}
