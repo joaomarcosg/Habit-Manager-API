@@ -2,8 +2,10 @@ package pgstore
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 )
@@ -20,19 +22,21 @@ func NewPGUserStore(pool *pgxpool.Pool) PGUserStore {
 	}
 }
 
-func (pgu *PGUserStore) CreateUser(
-	ctx context.Context,
-	name,
-	email string,
-	password []byte,
-) (uuid.UUID, error) {
+var _ domain.UserRepository = (*PGUserStore)(nil)
+
+func (pgu *PGUserStore) CreateUser(ctx context.Context, user domain.User) (uuid.UUID, error) {
+
 	id, err := pgu.Queries.CreateUser(ctx, CreateUserParams{
-		Name:         name,
-		Email:        email,
-		PasswordHash: password,
+		user.Name,
+		user.Email,
+		[]byte(user.Password),
 	})
 
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return uuid.UUID{}, domain.ErrDuplicatedEmailOrUserName
+		}
 		return uuid.UUID{}, err
 	}
 
