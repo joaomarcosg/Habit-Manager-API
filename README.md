@@ -1,19 +1,61 @@
-# API de Gerenciamento de hábitos - Habit Manager
+<h1 align="center" style="font-weight:bold;">Habit Manager API</h1>
 
-## 👨‍💻 Tecnologias e Ferramentas
+<p align="center">
+ <a href="#tech">Technologies</a> • 
+ <a href="#started">Getting Started</a> • 
+  <a href="#routes">API Endpoints</a>
+</p>
 
-| Tecnologia | Descrição |
-| ---------- | --------- |
-| Go         | Linguagem de programação estaticamente tipada |
-| Chi        | Framework Go que facilita a criação der servidores HTTP |
-| Postgres   | Banco de dados relacional |
-| Docker     | Plataforma de software para implantar aplicativos em containers |
-| Gorilla CSRF        | CSRF Tokens, autenticação baseada em token e um cookie pair
+<p align="center">
+        The Habit Manager API is an application for controlling and managing personal habits.
+        The entire API was developed in Go and with the help of the Chi framework to accelerate project development.
+</p>
 
-## 📝 Descrição do projeto
+<h2 id="technologies">💻 Technologies</h2>
 
-A API de gerenciamento de hábitos (Habit Manager API) é uma aplicação para o controle e gerenciamento de hábitos pessoais. Com ela podemos criar e medir o progresso dos nossos hábitos.
+| Technology | Description |
+| ---------- | ----------- |
+| Go | Statically typed programming language |
+| Chi | Go framework for creating HTTP servers |
+| Postgres | Relational database |
+| Docker | Software platform for deploying containerized applications |
+| Gorilla Websocket | Library for implementing real-time communication |
+| SCS - Session Manager | Session-based authentication |
 
-Toda a API foi desenvolvida em **Go** e com auxílio do framework **Chi** para acelerar o desenvolvimento do projeto. Para a persistência dos dados usei **Postgres** em conjunto com **Docker** para rodar na aplicação. Em relação a autenticação para acesso aos recursos optei pelo **CSRF Tokens** com auxílio do pacote Gorilla/CSRF.
+<h2 id="started">🚀 Getting started</h2>
 
-Nesse projeto tive a oportunidade de aplicar meus conhecimentos em APIs RESTful, tratamento de erros, persistência de dados usando ferramentas como SQLC, autenticação, tratamento de JSON.
+<h3>Prerequisites</h3>
+
+- Go 1.20+
+
+<h3>clone the repository</h3>
+
+```bash
+git clone https://github.com/joaomarcosg/Habit-Manager-API.git
+```
+
+<h3>Install the dependencies.</h3>
+
+```bash
+go mod tidy
+```
+
+<h3>Config .env variables</h2>
+
+Use the `.env.example` as reference to create your configuration file `.env`
+
+```yaml
+HABIT_MANAGER_DATABASE_PORT=5432
+HABIT_MANAGER_DATABASE_NAME=habit
+HABIT_MANAGER_DATABASE_USER=postgres
+HABIT_MANAGER_DATABASE_PASSWORD=123
+HABIT_MANAGER_DATABASE_HOST=localhost
+HABIT_MANAGER_KEY=abcdefghijlmnopqrstuvwxyz
+```
+
+<h3>Starting</h3>
+
+```bash
+cd habit-manager-api
+go run /cmd/api/main.go
+```
