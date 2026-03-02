@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
@@ -59,10 +60,16 @@ func (pgu *PGUserStore) GetUserByEmail(ctx context.Context, email string) (domai
 }
 
 func (pgu *PGUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+
 	user, err := pgu.Queries.GetUserByEmail(ctx, email)
+
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return uuid.UUID{}, domain.ErrInvalidCredentials
+		}
 		return uuid.UUID{}, err
 	}
+
 	return user.ID, nil
 }
 
