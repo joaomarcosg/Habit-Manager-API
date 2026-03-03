@@ -49,7 +49,7 @@ func (pgu *PGUserStore) GetUserByEmail(ctx context.Context, email string) (domai
 	user, err := pgu.Queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, domain.ErrInvalidCredentials
+			return domain.User{}, domain.ErrUserNotFound
 		}
 		return domain.User{}, err
 	}
