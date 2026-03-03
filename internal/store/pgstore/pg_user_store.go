@@ -45,8 +45,12 @@ func (pgu *PGUserStore) CreateUser(ctx context.Context, user domain.User) (uuid.
 }
 
 func (pgu *PGUserStore) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+
 	user, err := pgu.Queries.GetUserByEmail(ctx, email)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.User{}, domain.ErrInvalidCredentials
+		}
 		return domain.User{}, err
 	}
 
