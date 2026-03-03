@@ -5,25 +5,17 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var (
-	ErrDuplicatedEmailOrUserName = errors.New("username or email already exists")
-	ErrInvalidCredentials        = errors.New("invalid credentials")
-)
-
 type UserService struct {
-	Store store.UserStore
+	repo domain.UserRepository
 }
 
-func NewUserService(store store.UserStore) *UserService {
+func NewUserService(repo domain.UserRepository) *UserService {
 	return &UserService{
-		Store: store,
+		repo: repo,
 	}
 }
 
@@ -33,17 +25,22 @@ func (us *UserService) CreateUser(
 	email,
 	password string,
 ) (uuid.UUID, error) {
+
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return uuid.UUID{}, err
 	}
 
-	id, err := us.Store.CreateUser(ctx, name, email, hash)
+	user := domain.User{
+		Name:     name,
+		Email:    email,
+		Password: string(hash),
+	}
+
+	id, err := us.repo.CreateUser(ctx, user)
+
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return uuid.UUID{}, ErrDuplicatedEmailOrUserName
-		}
+		return uuid.UUID{}, err
 	}
 
 	return id, nil
@@ -51,11 +48,9 @@ func (us *UserService) CreateUser(
 
 func (us *UserService) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
 
-	user, err := us.Store.GetUserByEmail(ctx, email)
+	user, err := us.repo.GetUserByEmail(ctx, email)
+
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return uuid.UUID{}, ErrInvalidCredentials
-		}
 		return uuid.UUID{}, err
 	}
 
@@ -74,12 +69,9 @@ func (us *UserService) AuthenticateUser(ctx context.Context, email, password str
 
 func (us *UserService) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 
-	user, err := us.Store.GetUserByEmail(ctx, email)
+	user, err := us.repo.GetUserByEmail(ctx, email)
 
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, ErrInvalidCredentials
-		}
 		return domain.User{}, err
 	}
 
@@ -89,12 +81,9 @@ func (us *UserService) GetUserByEmail(ctx context.Context, email string) (domain
 
 func (us *UserService) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
 
-	user, err := us.Store.GetUserById(ctx, id)
+	user, err := us.repo.GetUserById(ctx, id)
 
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.User{}, ErrInvalidCredentials
-		}
 		return domain.User{}, err
 	}
 
