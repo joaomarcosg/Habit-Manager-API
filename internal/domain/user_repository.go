@@ -8,7 +8,6 @@ import (
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user User) (uuid.UUID, error)
-	AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id uuid.UUID) (User, error)
 }
