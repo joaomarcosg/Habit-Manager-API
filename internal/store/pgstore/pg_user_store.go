@@ -63,20 +63,6 @@ func (pgu *PGUserStore) GetUserByEmail(ctx context.Context, email string) (domai
 	}, nil
 }
 
-func (pgu *PGUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
-
-	user, err := pgu.Queries.GetUserByEmail(ctx, email)
-
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return uuid.UUID{}, domain.ErrInvalidCredentials
-		}
-		return uuid.UUID{}, err
-	}
-
-	return user.ID, nil
-}
-
 func (pgu *PGUserStore) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
 	user, err := pgu.Queries.GetUserById(ctx, id)
 	if err != nil {
