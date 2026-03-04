@@ -2,100 +2,125 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
-	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type MockUserStore struct{}
-
-func (m *MockUserStore) CreateUser(
-	ctx context.Context,
-	name,
-	email string,
-	password []byte,
-) (uuid.UUID, error) {
-	id := uuid.New()
-	return id, nil
+type MockUserRepository struct {
+	CreateUserFn       func(ctx context.Context, user domain.User) (uuid.UUID, error)
+	GetUserByEmailFn   func(ctx context.Context, email string) (domain.User, error)
+	GetUserByIdFn      func(ctx context.Context, id uuid.UUID) (domain.User, error)
+	AuthenticateUserFn func(ctx context.Context, email, password string) (uuid.UUID, error)
 }
 
-func (m *MockUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
-	id := uuid.New()
-	return id, nil
+func (m *MockUserRepository) CreateUser(ctx context.Context, user domain.User) (uuid.UUID, error) {
+	return m.CreateUserFn(ctx, user)
 }
 
-func (m *MockUserStore) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
-	id := uuid.New()
-
-	hash, _ := bcrypt.GenerateFromPassword([]byte("Password123456"), bcrypt.DefaultCost)
-
-	return domain.User{
-		ID:       id,
-		Name:     "John Doe",
-		Email:    "johndoe@email.com",
-		Password: string(hash),
-	}, nil
+func (m *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+	return m.GetUserByEmailFn(ctx, email)
 }
 
-func (m *MockUserStore) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	return domain.User{
-		ID:        id,
-		Name:      "John Doe",
-		Email:     "johndoe@email.com",
-		Createdat: time.Now(),
-		Updatedat: time.Now(),
-	}, nil
+func (m *MockUserRepository) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
+	return m.GetUserByIdFn(ctx, id)
 }
 
-func TestCreateUser(t *testing.T) {
-	mockStore := MockUserStore{}
-	userService := NewUserService(&mockStore)
-
-	ctx := context.Background()
-	userName := "John Doe"
-	email := "johndoe@email.com"
-	password, _ := bcrypt.GenerateFromPassword([]byte("Password123456"), bcrypt.DefaultCost)
-
-	id, err := userService.Store.CreateUser(
-		ctx,
-		userName,
-		email,
-		password,
-	)
-
-	assert.NoError(t, err)
-	assert.NotEqual(t, uuid.Nil, id)
-
+func (m *MockUserRepository) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+	return m.AuthenticateUserFn(ctx, email, password)
 }
 
-func TestGetUserByEmail(t *testing.T) {
-	mockStore := MockUserStore{}
-	userService := NewUserService(&mockStore)
+func TestSucessCreateUser(t *testing.T) {
+	expectedID := uuid.New()
 
-	ctx := context.Background()
-	email := "johndoe@email.com"
-	emptyUser := domain.User{}
+	mockRepo := &MockUserRepository{
+		CreateUserFn: func(ctx context.Context, user domain.User) (uuid.UUID, error) {
+			if user.Password == "123456" {
+				t.Errorf("password should be hashed")
+			}
+			return expectedID, nil
+		},
+	}
 
-	user, err := userService.Store.GetUserByEmail(ctx, email)
+	service := NewUserService(mockRepo)
 
-	assert.NoError(t, err)
-	assert.NotEqual(t, emptyUser, user)
+	id, err := service.CreateUser(context.Background(), "John Doe", "johndoe@email.com", "Password123456")
+
+	if err != nil {
+		t.Fatalf("unexpected erro %v", err)
+	}
+
+	if id != expectedID {
+		t.Fatalf("expected %v, got %v", expectedID, id)
+	}
 }
 
-func TestGetUserById(t *testing.T) {
-	mockStore := MockUserStore{}
-	userService := NewUserService(&mockStore)
+func TestDuplicateCreateUser(t *testing.T) {
+	mockRepo := &MockUserRepository{
+		CreateUserFn: func(ctx context.Context, user domain.User) (uuid.UUID, error) {
+			return uuid.UUID{}, domain.ErrDuplicatedEmailOrUserName
+		},
+	}
 
-	ctx := context.Background()
-	id := uuid.New()
+	service := NewUserService(mockRepo)
 
-	user, err := userService.Store.GetUserById(ctx, id)
+	_, err := service.CreateUser(context.Background(), "John Doe", "johndoe@email.com", "Password123456")
 
-	assert.NoError(t, err)
-	assert.NotEqual(t, uuid.Nil, user.ID)
+	if !errors.Is(err, domain.ErrDuplicatedEmailOrUserName) {
+		t.Fatalf("expected duplicate error, got %v", err)
+	}
+}
 
+func TestSucessAuthenticateUser(t *testing.T) {
+	password := "Password123456"
+	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
+
+	expectedID := uuid.New()
+
+	mockRepo := &MockUserRepository{
+		GetUserByEmailFn: func(ctx context.Context, email string) (domain.User, error) {
+			return domain.User{
+				ID:       expectedID,
+				Email:    email,
+				Password: string(hash),
+			}, nil
+		},
+	}
+
+	service := NewUserService(mockRepo)
+
+	id, err := service.AuthenticateUser(context.Background(), "johndoe@email.com", "Password123456")
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if id != expectedID {
+		t.Fatalf("expected %v, got %v", expectedID, id)
+	}
+}
+
+func TestInvalidPasswordAuthenticateUser(t *testing.T) {
+	hash, _ := bcrypt.GenerateFromPassword([]byte("Password123456"), 12)
+
+	mockRepo := &MockUserRepository{
+		GetUserByEmailFn: func(ctx context.Context, email string) (domain.User, error) {
+			return domain.User{
+				ID:       uuid.New(),
+				Email:    email,
+				Password: string(hash),
+			}, nil
+		},
+	}
+
+	service := NewUserService(mockRepo)
+
+	_, err := service.AuthenticateUser(context.Background(), "johndoe@email.com", "wrong-password123")
+
+	if err == nil {
+		t.Fatal("expected error, but got nil")
+	}
 }
