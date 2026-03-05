@@ -1,15 +1,22 @@
 package domain
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
 
+var (
+	ErrDuplicateCategoryName = errors.New("category name already exists")
+	ErrCategoryNotFound      = errors.New("category not found")
+	ErrCategoryInUse         = errors.New("category is in use")
+)
+
 type Category struct {
-	ID        uuid.UUID `json:"category_id"`
-	Name      string    `json:"category_name"`
-	Entries   int       `json:"entries"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        uuid.UUID
+	Name      string
+	Entries   int
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
