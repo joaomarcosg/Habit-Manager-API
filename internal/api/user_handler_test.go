@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type MockUserRepository struct {
@@ -41,8 +42,15 @@ func (m *MockUserRepository) AuthenticateUser(ctx context.Context, email, passwo
 }
 
 func TestSignupUser(t *testing.T) {
+
+	mockRepo := &MockUserRepository{
+		CreateUserFn: func(ctx context.Context, user domain.User) (uuid.UUID, error) {
+			return uuid.New(), nil
+		},
+	}
+
 	api := Api{
-		UserService: *services.NewUserService(&MockUserRepository{}),
+		UserService: *services.NewUserService(mockRepo),
 	}
 
 	payload := map[string]any{
@@ -88,8 +96,21 @@ func TestLoginUser(t *testing.T) {
 	sessionManager.Store = memstore.New()
 	sessionManager.Lifetime = 1 * time.Hour
 
+	password := "123456"
+	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
+
+	mockRepo := &MockUserRepository{
+		GetUserByEmailFn: func(ctx context.Context, email string) (domain.User, error) {
+			return domain.User{
+				ID:       uuid.New(),
+				Email:    email,
+				Password: string(hash),
+			}, nil
+		},
+	}
+
 	api := Api{
-		UserService: *services.NewUserService(&MockUserRepository{}),
+		UserService: *services.NewUserService(mockRepo),
 		Sessions:    sessionManager,
 	}
 
@@ -123,7 +144,7 @@ func TestLoginUser(t *testing.T) {
 	}
 
 	if resBody["message"] != "logged in sucessfully" {
-		t.Errorf("message differs; got %q | want 'logged in sucessfully'", resBody["message"])
+		t.Errorf("message differs; got %q | want 'logged in successfully'", resBody["message"])
 	}
 
 }
