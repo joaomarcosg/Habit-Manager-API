@@ -17,32 +17,32 @@ import (
 	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
 )
 
-type mockUserStore struct{}
-
-func (m *mockUserStore) CreateUser(
-	ctx context.Context,
-	userName,
-	email string,
-	password []byte,
-) (uuid.UUID, error) {
-	return uuid.New(), nil
+type MockUserRepository struct {
+	CreateUserFn       func(ctx context.Context, user domain.User) (uuid.UUID, error)
+	GetUserByEmailFn   func(ctx context.Context, email string) (domain.User, error)
+	GetUserByIdFn      func(ctx context.Context, id uuid.UUID) (domain.User, error)
+	AuthenticateUserFn func(ctx context.Context, email, password string) (uuid.UUID, error)
 }
 
-func (m *mockUserStore) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
-	return uuid.UUID{}, nil
+func (m *MockUserRepository) CreateUser(ctx context.Context, user domain.User) (uuid.UUID, error) {
+	return m.CreateUserFn(ctx, user)
 }
 
-func (m *mockUserStore) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
-	return domain.User{}, nil
+func (m *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+	return m.GetUserByEmailFn(ctx, email)
 }
 
-func (m *mockUserStore) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	return domain.User{}, nil
+func (m *MockUserRepository) GetUserById(ctx context.Context, id uuid.UUID) (domain.User, error) {
+	return m.GetUserByIdFn(ctx, id)
+}
+
+func (m *MockUserRepository) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+	return m.AuthenticateUserFn(ctx, email, password)
 }
 
 func TestSignupUser(t *testing.T) {
 	api := Api{
-		UserService: *services.NewUserService(&mockUserStore{}),
+		UserService: *services.NewUserService(&MockUserRepository{}),
 	}
 
 	payload := map[string]any{
@@ -89,7 +89,7 @@ func TestLoginUser(t *testing.T) {
 	sessionManager.Lifetime = 1 * time.Hour
 
 	api := Api{
-		UserService: *services.NewUserService(&mockUserStore{}),
+		UserService: *services.NewUserService(&MockUserRepository{}),
 		Sessions:    sessionManager,
 	}
 
