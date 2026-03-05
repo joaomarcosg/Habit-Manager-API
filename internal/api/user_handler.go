@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/jsonutils"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/usecase/user"
 )
 
@@ -26,7 +26,7 @@ func (api *Api) handleSignupUser(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		if errors.Is(err, services.ErrDuplicatedEmailOrUserName) {
+		if errors.Is(err, domain.ErrDuplicatedEmailOrUserName) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusUnprocessableEntity, map[string]any{
 				"error": "email or username already exists",
 			})
@@ -50,7 +50,7 @@ func (api *Api) handleLoginUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := api.UserService.AuthenticateUser(r.Context(), data.Email, data.Password)
 	if err != nil {
-		if errors.Is(err, services.ErrInvalidCredentials) {
+		if errors.Is(err, domain.ErrInvalidCredentials) {
 			jsonutils.EncodeJson(w, r, http.StatusBadRequest, map[string]any{
 				"error": "invalid email or password",
 			})
