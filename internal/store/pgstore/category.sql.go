@@ -27,30 +27,11 @@ func (q *Queries) CreateCategory(ctx context.Context, name string) (uuid.UUID, e
 
 const deleteCategory = `-- name: DeleteCategory :execresult
 DELETE FROM categories
-WHERE id = $1
+WHERE name = $1
 `
 
-func (q *Queries) DeleteCategory(ctx context.Context, id uuid.UUID) (pgconn.CommandTag, error) {
-	return q.db.Exec(ctx, deleteCategory, id)
-}
-
-const getCategoryById = `-- name: GetCategoryById :one
-SELECT id, name, entries, created_at, updated_at
-FROM categories
-WHERE id = $1
-`
-
-func (q *Queries) GetCategoryById(ctx context.Context, id uuid.UUID) (Category, error) {
-	row := q.db.QueryRow(ctx, getCategoryById, id)
-	var i Category
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Entries,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) DeleteCategory(ctx context.Context, name string) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, deleteCategory, name)
 }
 
 const getCategoryByName = `-- name: GetCategoryByName :one
