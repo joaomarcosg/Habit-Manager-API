@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/jsonutils"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/usecase/category"
 )
 
@@ -21,9 +21,9 @@ func (api *Api) handleCreateCategory(w http.ResponseWriter, r *http.Request) {
 	id, err := api.CategoryService.CreateCategory(r.Context(), data.Name)
 
 	if err != nil {
-		if errors.Is(err, services.ErrDuplicateCategoryName) {
+		if errors.Is(err, domain.ErrDuplicateCategoryName) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusUnprocessableEntity, map[string]any{
-				"error": "email or username already exists",
+				"error": "category already exists",
 			})
 			return
 		}
@@ -47,7 +47,7 @@ func (api *Api) handleGetCategoryByName(w http.ResponseWriter, r *http.Request) 
 	category, err := api.CategoryService.GetCategoryByName(r.Context(), data.Name)
 
 	if err != nil {
-		if errors.Is(err, services.ErrCategoryNotFound) {
+		if errors.Is(err, domain.ErrCategoryNotFound) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
 				"error": "category not found",
 			})
@@ -73,7 +73,7 @@ func (api *Api) handleGetCategoryEntries(w http.ResponseWriter, r *http.Request)
 	entries, err := api.CategoryService.GetCategoryEntries(r.Context(), data.Name)
 
 	if err != nil {
-		if errors.Is(err, services.ErrCategoryNotFound) {
+		if errors.Is(err, domain.ErrCategoryNotFound) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
 				"error": "category not found",
 			})
@@ -82,7 +82,7 @@ func (api *Api) handleGetCategoryEntries(w http.ResponseWriter, r *http.Request)
 	}
 
 	_ = jsonutils.EncodeJson(w, r, http.StatusOK, map[string]any{
-		"category_entries": entries,
+		"category_entries": entries.Entries,
 	})
 
 }
@@ -99,12 +99,12 @@ func (api *Api) handleDeleteCategory(w http.ResponseWriter, r *http.Request) {
 	ok, err := api.CategoryService.DeleteCategory(r.Context(), data.Name)
 
 	if err != nil {
-		if errors.Is(err, services.ErrCategoryNotFound) {
+		if errors.Is(err, domain.ErrCategoryNotFound) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
 				"error": "category not found",
 			})
 			return
-		} else if errors.Is(err, services.ErrCategoryInUse) {
+		} else if errors.Is(err, domain.ErrCategoryInUse) {
 			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
 				"error": "category is in use",
 			})
