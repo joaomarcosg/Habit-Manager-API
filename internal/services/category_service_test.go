@@ -2,98 +2,246 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
-	"github.com/stretchr/testify/assert"
 )
 
-type MockCategoryStore struct{}
-
-func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uuid.UUID, error) {
-	id := uuid.New()
-	return id, nil
+type MockCategoryRepository struct {
+	CreateCategoryFn    func(ctx context.Context, category domain.Category) (uuid.UUID, error)
+	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
+	DeleteCategoryFn    func(ctx context.Context, name string) (bool, error)
 }
 
-func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
-	id := uuid.New()
-	return domain.Category{
-		ID:        id,
-		Name:      name,
+func (m *MockCategoryRepository) CreateCategory(ctx context.Context, category domain.Category) (uuid.UUID, error) {
+	return m.CreateCategoryFn(ctx, category)
+}
+
+func (m *MockCategoryRepository) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
+	return m.GetCategoryByNameFn(ctx, name)
+}
+
+func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string) (bool, error) {
+	return m.DeleteCategoryFn(ctx, name)
+}
+
+func TestSuccessCreateCategory(t *testing.T) {
+	expectedID := uuid.New()
+
+	mockRepo := &MockCategoryRepository{
+		CreateCategoryFn: func(ctx context.Context, category domain.Category) (uuid.UUID, error) {
+			return expectedID, nil
+		},
+	}
+
+	service := NewCategoryService(mockRepo)
+
+	id, err := service.CreateCategory(context.Background(), "Health")
+
+	if err != nil {
+		t.Fatalf("unexpected erro %v", err)
+	}
+
+	if id != expectedID {
+		t.Fatalf("expected %v, got %v", expectedID, id)
+	}
+}
+
+func TestDuplicateNameCreateCategory(t *testing.T) {
+	mockRepo := &MockCategoryRepository{
+		CreateCategoryFn: func(ctx context.Context, category domain.Category) (uuid.UUID, error) {
+			return uuid.UUID{}, domain.ErrDuplicateCategoryName
+		},
+	}
+
+	service := NewCategoryService(mockRepo)
+
+	id, err := service.CreateCategory(context.Background(), "Health")
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+
+	if !errors.Is(err, domain.ErrDuplicateCategoryName) {
+		t.Fatalf("expected ErrDuplicateCategoryName, got %v", err)
+	}
+
+	if id != uuid.Nil {
+		t.Fatalf("expcted empty uuid, got %v", id)
+	}
+}
+
+func TestSuccessGetCategoryByName(t *testing.T) {
+	expectedCategory := domain.Category{
+		ID:        uuid.New(),
+		Name:      "Health",
 		Entries:   1,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	}, nil
+	}
+
+	mockRepo := &MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				ID:        expectedCategory.ID,
+				Name:      expectedCategory.Name,
+				Entries:   expectedCategory.Entries,
+				CreatedAt: expectedCategory.CreatedAt,
+				UpdatedAt: expectedCategory.UpdatedAt,
+			}, nil
+		},
+	}
+
+	service := NewCategoryService(mockRepo)
+
+	category, err := service.GetCategoryByName(context.Background(), "Health")
+
+	if err != nil {
+		t.Fatalf("unexpected erro %v", err)
+	}
+
+	if category != expectedCategory {
+		t.Fatalf("expected %v, got %v", expectedCategory, category)
+	}
+
 }
 
-func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (int, error) {
-	entries := 1
-	return entries, nil
-}
-
-func (m *MockCategoryStore) DeleteCategory(ctx context.Context, name string) (bool, error) {
-	return true, nil
-}
-
-func TestCreateCategory(t *testing.T) {
-	mockStore := MockCategoryStore{}
-	categoryService := NewCategoryService(&mockStore)
-
-	id, err := categoryService.Store.CreateCategory(context.Background(), "Health")
-
-	assert.NoError(t, err)
-	assert.NotEqual(t, uuid.Nil, id)
-
-}
-
-func TestGetCategoryByName(t *testing.T) {
-	mockStore := MockCategoryStore{}
-	categoryService := NewCategoryService(&mockStore)
-
-	ctx := context.Background()
-	name := "Health"
+func TestCategoryNotFoundGetCategoryByName(t *testing.T) {
 	emptyCategory := domain.Category{}
 
-	category, err := categoryService.Store.GetCategoryByName(ctx, name)
+	mockRepo := &MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{}, domain.ErrCategoryNotFound
+		},
+	}
 
-	assert.NoError(t, err)
-	assert.NotEqual(t, emptyCategory, category)
-	assert.Equal(t, name, category.Name)
+	service := NewCategoryService(mockRepo)
+
+	category, err := service.GetCategoryByName(context.Background(), "Healht")
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+
+	if !errors.Is(err, domain.ErrCategoryNotFound) {
+		t.Fatalf("expected ErrCategoryNotFound, got %v", err)
+	}
+
+	if category != emptyCategory {
+		t.Fatalf("expected empty category, got %v", category)
+	}
+
 }
 
 func TestGetCategoryEntries(t *testing.T) {
-	mockStore := MockCategoryStore{}
-	categoryService := NewCategoryService(&mockStore)
+	expectedCategory := domain.Category{
+		ID:        uuid.New(),
+		Name:      "Health",
+		Entries:   1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 
-	ctx := context.Background()
-	name := "Health"
-	emptyCategory := domain.Category{}
+	expectedEntries := 1
 
-	categoryEntries, err := categoryService.GetCategoryByName(ctx, name)
+	mockRepo := &MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				ID:        expectedCategory.ID,
+				Name:      expectedCategory.Name,
+				Entries:   expectedCategory.Entries,
+				CreatedAt: expectedCategory.CreatedAt,
+				UpdatedAt: expectedCategory.UpdatedAt,
+			}, nil
+		},
+	}
 
-	assert.NoError(t, err)
-	assert.NotEqual(t, emptyCategory, categoryEntries)
-	assert.Equal(t, 1, categoryEntries.Entries)
+	service := NewCategoryService(mockRepo)
+
+	categoryEntries, err := service.GetCategoryEntries(context.Background(), "Health")
+
+	if err != nil {
+		t.Fatalf("unexpected erro %v", err)
+	}
+
+	if categoryEntries.Entries != expectedEntries {
+		t.Fatalf("expected %d, got %d", expectedEntries, categoryEntries.Entries)
+	}
 
 }
 
-func TestDeleteCategory(t *testing.T) {
-	mockStore := MockCategoryStore{}
-	categoryService := NewCategoryService(&mockStore)
+func TestSuccessDeleteCategory(t *testing.T) {
+	deleteCalled := false
 
-	ctx := context.Background()
-	name := "Health"
-
-	category, err := categoryService.Store.GetCategoryByName(ctx, name)
-	if category.Name != name {
-		t.Errorf("%s not found", category.ID)
+	mockRepo := &MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				ID:      uuid.New(),
+				Name:    "Health",
+				Entries: 0,
+			}, nil
+		},
+		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
+			deleteCalled = true
+			return true, nil
+		},
 	}
 
-	ok, err := categoryService.Store.DeleteCategory(ctx, name)
+	service := NewCategoryService(mockRepo)
 
-	assert.NoError(t, err)
-	assert.Equal(t, ok, true)
+	ok, err := service.DeleteCategory(context.Background(), "Health")
+
+	if err != nil {
+		t.Fatalf("unexpected error %v", err)
+	}
+
+	if !ok {
+		t.Fatalf("expcted true, got %v", err)
+	}
+
+	if !deleteCalled {
+		t.Fatalf("DeleteCategory should have been called")
+	}
+}
+
+func TestCategoryInUseDeleteCategory(t *testing.T) {
+	deleteCalled := false
+
+	mockRepo := MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				ID:      uuid.New(),
+				Name:    "Health",
+				Entries: 1,
+			}, nil
+		},
+		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
+			deleteCalled = true
+			return true, nil
+		},
+	}
+
+	service := NewCategoryService(&mockRepo)
+
+	ok, err := service.DeleteCategory(context.Background(), "Health")
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+
+	if !errors.Is(err, domain.ErrCategoryInUse) {
+		t.Fatalf("expected ErrCategoryInUse, got %v", err)
+	}
+
+	if ok {
+		t.Fatalf("expected false, got %v", ok)
+	}
+
+	if deleteCalled {
+		t.Fatalf("DeleteCategory repository should not be called when category is in use")
+	}
 
 }
