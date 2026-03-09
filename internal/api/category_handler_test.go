@@ -17,31 +17,30 @@ import (
 	"github.com/joaomarcosg/Habit-Manager-API/internal/services"
 )
 
-type MockCategoryStore struct{}
-
-func (m *MockCategoryStore) CreateCategory(ctx context.Context, name string) (uuid.UUID, error) {
-	category := domain.Category{
-		ID:   uuid.New(),
-		Name: name,
-	}
-
-	return category.ID, nil
+type MockCategoryRepository struct {
+	CreateCategoryFn    func(ctx context.Context, category domain.Category) (uuid.UUID, error)
+	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
+	DeleteCategoryFn    func(ctx context.Context, name string) (bool, error)
 }
 
-func (m *MockCategoryStore) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
-	return domain.Category{}, nil
+func (m *MockCategoryRepository) CreateCategory(ctx context.Context, category domain.Category) (uuid.UUID, error) {
+	return m.CreateCategoryFn(ctx, category)
 }
 
-func (m *MockCategoryStore) GetCategoryEntries(ctx context.Context, name string) (int, error) {
-	entries := 1
-	return entries, nil
+func (m *MockCategoryRepository) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
+	return m.GetCategoryByNameFn(ctx, name)
 }
 
-func (m *MockCategoryStore) DeleteCategory(ctx context.Context, name string) (bool, error) {
-	return true, nil
+func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string) (bool, error) {
+	return m.DeleteCategoryFn(ctx, name)
 }
-
 func TestCreateCategory(t *testing.T) {
+
+	mockRepo := &MockCategoryRepository{
+		CreateCategoryFn: func(ctx context.Context, category domain.Category) (uuid.UUID, error) {
+			return uuid.New(), nil
+		},
+	}
 
 	gob.Register(uuid.UUID{})
 
@@ -50,7 +49,7 @@ func TestCreateCategory(t *testing.T) {
 	sessionManager.Lifetime = 1 * time.Hour
 
 	api := Api{
-		CategoryService: *services.NewCategoryService(&MockCategoryStore{}),
+		CategoryService: *services.NewCategoryService(mockRepo),
 		Sessions:        sessionManager,
 	}
 
@@ -86,6 +85,18 @@ func TestCreateCategory(t *testing.T) {
 
 func TestGetCategoryByName(t *testing.T) {
 
+	mockRepo := &MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				ID:        uuid.New(),
+				Name:      "Health",
+				Entries:   1,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			}, nil
+		},
+	}
+
 	gob.Register(uuid.UUID{})
 
 	sessionManager := scs.New()
@@ -93,7 +104,7 @@ func TestGetCategoryByName(t *testing.T) {
 	sessionManager.Lifetime = 1 * time.Hour
 
 	api := Api{
-		CategoryService: *services.NewCategoryService(&MockCategoryStore{}),
+		CategoryService: *services.NewCategoryService(mockRepo),
 		Sessions:        sessionManager,
 	}
 
@@ -126,6 +137,14 @@ func TestGetCategoryByName(t *testing.T) {
 
 func TestGetCategoryEntries(t *testing.T) {
 
+	mockRepo := &MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				Entries: 1,
+			}, nil
+		},
+	}
+
 	gob.Register(uuid.UUID{})
 
 	sessionManager := scs.New()
@@ -133,7 +152,7 @@ func TestGetCategoryEntries(t *testing.T) {
 	sessionManager.Lifetime = 1 * time.Hour
 
 	api := Api{
-		CategoryService: *services.NewCategoryService(&MockCategoryStore{}),
+		CategoryService: *services.NewCategoryService(mockRepo),
 		Sessions:        sessionManager,
 	}
 
@@ -167,6 +186,12 @@ func TestGetCategoryEntries(t *testing.T) {
 
 func TestDeleteCategory(t *testing.T) {
 
+	mockRepo := &MockCategoryRepository{
+		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
+			return true, nil
+		},
+	}
+
 	gob.Register(uuid.UUID{})
 
 	sessionManager := scs.New()
@@ -174,7 +199,7 @@ func TestDeleteCategory(t *testing.T) {
 	sessionManager.Lifetime = 1 * time.Hour
 
 	api := Api{
-		CategoryService: *services.NewCategoryService(&MockCategoryStore{}),
+		CategoryService: *services.NewCategoryService(mockRepo),
 		Sessions:        sessionManager,
 	}
 
