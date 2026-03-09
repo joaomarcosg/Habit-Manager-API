@@ -2,69 +2,53 @@ package services
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
-	"github.com/joaomarcosg/Habit-Manager-API/internal/store"
-)
-
-var (
-	ErrDuplicateCategoryName = errors.New("category name already exists")
-	ErrCategoryNotFound      = errors.New("category not found")
-	ErrCategoryInUse         = errors.New("category is in use")
 )
 
 type CategoryService struct {
-	Store store.CategoryStore
+	repo domain.CategoryRepository
 }
 
-func NewCategoryService(store store.CategoryStore) *CategoryService {
+func NewCategoryService(repo domain.CategoryRepository) *CategoryService {
 	return &CategoryService{
-		Store: store,
+		repo: repo,
 	}
 }
 
 func (cs *CategoryService) CreateCategory(ctx context.Context, name string) (uuid.UUID, error) {
-	id, err := cs.Store.CreateCategory(ctx, name)
+
+	category := domain.Category{
+		Name: name,
+	}
+
+	id, err := cs.repo.CreateCategory(ctx, category)
+
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return uuid.UUID{}, ErrDuplicateCategoryName
-		}
+		return uuid.UUID{}, err
 	}
 
 	return id, nil
 }
 
 func (cs *CategoryService) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
-	category, err := cs.Store.GetCategoryByName(ctx, name)
+
+	category, err := cs.repo.GetCategoryByName(ctx, name)
+
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Category{}, ErrCategoryNotFound
-		}
 		return domain.Category{}, err
 	}
 
-	return domain.Category{
-		ID:        category.ID,
-		Name:      category.Name,
-		Entries:   category.Entries,
-		CreatedAt: category.CreatedAt,
-		UpdatedAt: category.UpdatedAt,
-	}, nil
+	return category, nil
 
 }
 
 func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) (domain.Category, error) {
-	categoryEntries, err := cs.Store.GetCategoryByName(ctx, name)
+
+	categoryEntries, err := cs.repo.GetCategoryByName(ctx, name)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return domain.Category{}, ErrCategoryNotFound
-		}
-		return domain.Category{}, err
+		return domain.Category{Entries: 0}, err
 	}
 
 	return domain.Category{
@@ -73,20 +57,17 @@ func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) 
 }
 
 func (cs *CategoryService) DeleteCategory(ctx context.Context, name string) (bool, error) {
-	category, err := cs.Store.GetCategoryByName(ctx, name)
+
+	category, err := cs.repo.GetCategoryByName(ctx, name)
+
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return false, ErrCategoryNotFound
-		}
 		return false, err
 	}
 
-	ok, err := cs.Store.DeleteCategory(ctx, category.Name)
-	var pgErr *pgconn.PgError
+	ok, err := cs.repo.DeleteCategory(ctx, category.Name)
+
 	if err != nil {
-		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
-			return false, ErrCategoryInUse
-		}
+		return false, err
 	}
 
 	return ok, nil
