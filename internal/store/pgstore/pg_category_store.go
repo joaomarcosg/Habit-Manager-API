@@ -25,9 +25,9 @@ func NewPGCategoryStore(pool *pgxpool.Pool) PGCategoryStore {
 
 var _ domain.CategoryRepository = (*PGCategoryStore)(nil)
 
-func (pgc *PGCategoryStore) CreateCategory(ctx context.Context, name string) (uuid.UUID, error) {
+func (pgc *PGCategoryStore) CreateCategory(ctx context.Context, category domain.Category) (uuid.UUID, error) {
 
-	id, err := pgc.Queries.CreateCategory(ctx, name)
+	id, err := pgc.Queries.CreateCategory(ctx, category.Name)
 
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -65,6 +65,10 @@ func (pgc *PGCategoryStore) DeleteCategory(ctx context.Context, name string) (bo
 	ok, err := pgc.Queries.DeleteCategory(ctx, name)
 
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+			return false, domain.ErrCategoryInUse
+		}
 		return false, err
 	}
 
