@@ -64,6 +64,10 @@ func (cs *CategoryService) DeleteCategory(ctx context.Context, name string) (boo
 		return false, err
 	}
 
+	if category.Entries > 0 {
+		return false, domain.ErrCategoryInUse
+	}
+
 	ok, err := cs.repo.DeleteCategory(ctx, category.Name)
 
 	if err != nil {
