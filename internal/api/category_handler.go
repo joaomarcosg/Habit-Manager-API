@@ -96,7 +96,17 @@ func (api *Api) handleDeleteCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ok, err := api.CategoryService.DeleteCategory(r.Context(), data.Name)
+	category, err := api.CategoryService.GetCategoryByName(r.Context(), data.Name)
+	if err != nil {
+		if errors.Is(err, domain.ErrCategoryNotFound) {
+			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
+				"error": "category not found",
+			})
+			return
+		}
+	}
+
+	ok, err := api.CategoryService.DeleteCategory(r.Context(), category.Name)
 
 	if err != nil {
 		if errors.Is(err, domain.ErrCategoryNotFound) {
