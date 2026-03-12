@@ -65,11 +65,11 @@ func (pgc *PGCategoryStore) DeleteCategory(ctx context.Context, name string) (bo
 	ok, err := pgc.Queries.DeleteCategory(ctx, name)
 
 	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
-			return false, domain.ErrCategoryInUse
-		}
 		return false, err
+	}
+
+	if ok.RowsAffected() == 0 {
+		return false, domain.ErrCategoryInUse
 	}
 
 	return ok.RowsAffected() > 0, nil
