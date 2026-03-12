@@ -208,19 +208,10 @@ func TestSuccessDeleteCategory(t *testing.T) {
 }
 
 func TestCategoryInUseDeleteCategory(t *testing.T) {
-	deleteCalled := false
 
 	mockRepo := MockCategoryRepository{
-		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
-			return domain.Category{
-				ID:      uuid.New(),
-				Name:    "Health",
-				Entries: 1,
-			}, nil
-		},
 		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
-			deleteCalled = true
-			return true, nil
+			return true, domain.ErrCategoryInUse
 		},
 	}
 
@@ -238,10 +229,6 @@ func TestCategoryInUseDeleteCategory(t *testing.T) {
 
 	if ok {
 		t.Fatalf("expected false, got %v", ok)
-	}
-
-	if deleteCalled {
-		t.Fatalf("DeleteCategory repository should not be called when category is in use")
 	}
 
 }
