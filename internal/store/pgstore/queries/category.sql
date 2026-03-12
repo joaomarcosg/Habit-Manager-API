@@ -15,4 +15,5 @@ WHERE name = $1;
 
 -- name: DeleteCategory :execresult
 DELETE FROM categories
-WHERE name = $1;
+WHERE name = $1
+AND entries = 0;
