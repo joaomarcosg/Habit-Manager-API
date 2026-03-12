@@ -28,6 +28,7 @@ func (q *Queries) CreateCategory(ctx context.Context, name string) (uuid.UUID, e
 const deleteCategory = `-- name: DeleteCategory :execresult
 DELETE FROM categories
 WHERE name = $1
+AND entries = 0
 `
 
 func (q *Queries) DeleteCategory(ctx context.Context, name string) (pgconn.CommandTag, error) {
