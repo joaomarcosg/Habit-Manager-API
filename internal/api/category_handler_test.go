@@ -187,6 +187,13 @@ func TestGetCategoryEntries(t *testing.T) {
 func TestDeleteCategory(t *testing.T) {
 
 	mockRepo := &MockCategoryRepository{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				ID:      uuid.New(),
+				Name:    "Health",
+				Entries: 0,
+			}, nil
+		},
 		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
 			return true, nil
 		},
