@@ -33,7 +33,7 @@ func (m *MockUserRepository) AuthenticateUser(ctx context.Context, email, passwo
 	return m.AuthenticateUserFn(ctx, email, password)
 }
 
-func TestSucessCreateUser(t *testing.T) {
+func TestSuccessCreateUser(t *testing.T) {
 	expectedID := uuid.New()
 
 	mockRepo := &MockUserRepository{
@@ -74,7 +74,7 @@ func TestDuplicateCreateUser(t *testing.T) {
 	}
 }
 
-func TestSucessAuthenticateUser(t *testing.T) {
+func TestSuccessAuthenticateUser(t *testing.T) {
 	password := "Password123456"
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
 
