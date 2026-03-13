@@ -20,7 +20,7 @@ import (
 type MockCategoryRepository struct {
 	CreateCategoryFn    func(ctx context.Context, category domain.Category) (uuid.UUID, error)
 	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
-	DeleteCategoryFn    func(ctx context.Context, name string) (bool, error)
+	DeleteCategoryFn    func(ctx context.Context, name string) error
 }
 
 func (m *MockCategoryRepository) CreateCategory(ctx context.Context, category domain.Category) (uuid.UUID, error) {
@@ -31,7 +31,7 @@ func (m *MockCategoryRepository) GetCategoryByName(ctx context.Context, name str
 	return m.GetCategoryByNameFn(ctx, name)
 }
 
-func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string) (bool, error) {
+func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string) error {
 	return m.DeleteCategoryFn(ctx, name)
 }
 func TestCreateCategory(t *testing.T) {
@@ -194,8 +194,8 @@ func TestDeleteCategory(t *testing.T) {
 				Entries: 0,
 			}, nil
 		},
-		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
-			return true, nil
+		DeleteCategoryFn: func(ctx context.Context, name string) error {
+			return nil
 		},
 	}
 
