@@ -106,7 +106,7 @@ func (api *Api) handleDeleteCategory(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ok, err := api.CategoryService.DeleteCategory(r.Context(), category.Name)
+	err = api.CategoryService.DeleteCategory(r.Context(), category.Name)
 
 	if err != nil {
 		if errors.Is(err, domain.ErrCategoryNotFound) {
@@ -115,7 +115,7 @@ func (api *Api) handleDeleteCategory(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		} else if errors.Is(err, domain.ErrCategoryInUse) {
-			_ = jsonutils.EncodeJson(w, r, http.StatusNotFound, map[string]any{
+			_ = jsonutils.EncodeJson(w, r, http.StatusConflict, map[string]any{
 				"error": "category is in use",
 			})
 			return
@@ -123,7 +123,7 @@ func (api *Api) handleDeleteCategory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = jsonutils.EncodeJson(w, r, http.StatusOK, map[string]any{
-		"message": ok,
+		"message": "category deleted",
 	})
 
 }
