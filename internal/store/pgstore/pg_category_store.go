@@ -60,18 +60,18 @@ func (pgc *PGCategoryStore) GetCategoryByName(ctx context.Context, name string) 
 	}, nil
 }
 
-func (pgc *PGCategoryStore) DeleteCategory(ctx context.Context, name string) (bool, error) {
+func (pgc *PGCategoryStore) DeleteCategory(ctx context.Context, name string) error {
 
 	ok, err := pgc.Queries.DeleteCategory(ctx, name)
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	if ok.RowsAffected() == 0 {
-		return false, domain.ErrCategoryInUse
+		return domain.ErrCategoryInUse
 	}
 
-	return ok.RowsAffected() > 0, nil
+	return nil
 
 }
