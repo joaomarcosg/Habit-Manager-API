@@ -1,9 +1,15 @@
 package domain
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrDuplicateHabitName = errors.New("habit name already exists")
+	ErrHabitNotFound      = errors.New("habit not found")
 )
 
 type WeekDay string
