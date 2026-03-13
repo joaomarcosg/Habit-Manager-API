@@ -56,14 +56,14 @@ func (cs *CategoryService) GetCategoryEntries(ctx context.Context, name string) 
 	}, nil
 }
 
-func (cs *CategoryService) DeleteCategory(ctx context.Context, name string) (bool, error) {
+func (cs *CategoryService) DeleteCategory(ctx context.Context, name string) error {
 
-	ok, err := cs.repo.DeleteCategory(ctx, name)
+	err := cs.repo.DeleteCategory(ctx, name)
 
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	return ok, nil
+	return nil
 
 }
