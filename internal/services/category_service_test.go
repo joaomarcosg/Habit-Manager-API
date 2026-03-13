@@ -13,7 +13,7 @@ import (
 type MockCategoryRepository struct {
 	CreateCategoryFn    func(ctx context.Context, category domain.Category) (uuid.UUID, error)
 	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
-	DeleteCategoryFn    func(ctx context.Context, name string) (bool, error)
+	DeleteCategoryFn    func(ctx context.Context, name string) error
 }
 
 func (m *MockCategoryRepository) CreateCategory(ctx context.Context, category domain.Category) (uuid.UUID, error) {
@@ -24,7 +24,7 @@ func (m *MockCategoryRepository) GetCategoryByName(ctx context.Context, name str
 	return m.GetCategoryByNameFn(ctx, name)
 }
 
-func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string) (bool, error) {
+func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string) error {
 	return m.DeleteCategoryFn(ctx, name)
 }
 
@@ -177,22 +177,18 @@ func TestSuccessDeleteCategory(t *testing.T) {
 	deleteCalled := false
 
 	mockRepo := &MockCategoryRepository{
-		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
+		DeleteCategoryFn: func(ctx context.Context, name string) error {
 			deleteCalled = true
-			return true, nil
+			return nil
 		},
 	}
 
 	service := NewCategoryService(mockRepo)
 
-	ok, err := service.DeleteCategory(context.Background(), "Health")
+	err := service.DeleteCategory(context.Background(), "Health")
 
 	if err != nil {
 		t.Fatalf("unexpected error %v", err)
-	}
-
-	if !ok {
-		t.Fatalf("expcted true, got %v", err)
 	}
 
 	if !deleteCalled {
@@ -203,14 +199,14 @@ func TestSuccessDeleteCategory(t *testing.T) {
 func TestCategoryInUseDeleteCategory(t *testing.T) {
 
 	mockRepo := MockCategoryRepository{
-		DeleteCategoryFn: func(ctx context.Context, name string) (bool, error) {
-			return true, domain.ErrCategoryInUse
+		DeleteCategoryFn: func(ctx context.Context, name string) error {
+			return domain.ErrCategoryInUse
 		},
 	}
 
 	service := NewCategoryService(&mockRepo)
 
-	ok, err := service.DeleteCategory(context.Background(), "Health")
+	err := service.DeleteCategory(context.Background(), "Health")
 
 	if err == nil {
 		t.Fatalf("expected error, got nil")
@@ -218,10 +214,6 @@ func TestCategoryInUseDeleteCategory(t *testing.T) {
 
 	if !errors.Is(err, domain.ErrCategoryInUse) {
 		t.Fatalf("expected ErrCategoryInUse, got %v", err)
-	}
-
-	if ok {
-		t.Fatalf("expected false, got %v", ok)
 	}
 
 }
