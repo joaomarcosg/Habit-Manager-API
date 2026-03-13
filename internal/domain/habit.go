@@ -19,14 +19,14 @@ const (
 )
 
 type Habit struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"habit_name"`
-	Category    string    `json:"habit_category"`
-	Description string    `json:"description"`
-	Frequency   []WeekDay `json:"frequency"`
-	StartDate   time.Time `json:"start_date"`
-	TargetDate  time.Time `json:"target_date"`
-	Priority    int       `json:"priority"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          uuid.UUID
+	Name        string
+	Category    string
+	Description string
+	Frequency   []WeekDay
+	StartDate   time.Time
+	TargetDate  time.Time
+	Priority    int
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
