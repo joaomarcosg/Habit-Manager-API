@@ -7,77 +7,43 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
-	"github.com/stretchr/testify/assert"
 )
 
-type MockHabitStore struct{}
-
-func (m *MockHabitStore) CreateHabit(
-	ctx context.Context,
-	name,
-	category,
-	description string,
-	frequency []domain.WeekDay,
-	startDate,
-	targetDate time.Time,
-	priority int,
-) (uuid.UUID, error) {
-	id := uuid.New()
-	return id, nil
+type MockHabitRepository struct {
+	CreateHabitFn    func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
+	GetHabitByNameFn func(ctx context.Context, name string) (domain.Habit, error)
+	UpdateHabitFn    func(ctx context.Context, habit domain.Habit) (domain.Habit, error)
+	DeleteHabitFn    func(ctx context.Context, name string) error
 }
 
-func (m *MockHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (domain.Habit, error) {
-	return domain.Habit{
-		ID:          id,
-		Name:        "Work out",
-		Category:    "Health",
-		Description: "Work out 5 times a week",
-		Frequency:   []domain.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
-		StartDate:   time.Now(),
-		TargetDate:  time.Now().Add(7),
-		Priority:    10,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}, nil
+func (m *MockHabitRepository) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+	return m.CreateHabitFn(ctx, habit)
 }
 
-func (m *MockHabitStore) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
-	id := uuid.New()
-	return domain.Habit{
-		ID:          id,
-		Name:        name,
-		Category:    "Health",
-		Description: "Work out 5 times a week",
-		Frequency:   []domain.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
-		StartDate:   time.Now(),
-		TargetDate:  time.Now().Add(7),
-		Priority:    10,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}, nil
+func (m *MockHabitRepository) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
+	return m.GetHabitByNameFn(ctx, name)
 }
 
-func (m *MockHabitStore) UpdateHabit(
-	ctx context.Context,
-	name,
-	category,
-	description string,
-	frequency []domain.WeekDay,
-	startDate time.Time,
-	targetDate time.Time,
-) (domain.Habit, error) {
-	return domain.Habit{}, nil
+func (m *MockHabitRepository) UpdateHabit(ctx context.Context, habit domain.Habit) (domain.Habit, error) {
+	return m.UpdateHabitFn(ctx, habit)
 }
 
-func (m *MockHabitStore) DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
-	return id, nil
+func (m *MockHabitRepository) DeleteHabit(ctx context.Context, name string) error {
+	return m.DeleteHabitFn(ctx, name)
 }
 
-func TestCreateHabit(t *testing.T) {
-	mockStore := MockHabitStore{}
-	habitService := NewHabitService(&mockStore)
+func TestSuccessCreateHabit(t *testing.T) {
+	expectedID := uuid.New()
 
-	id, err := habitService.Store.CreateHabit(
+	mockRepo := &MockHabitRepository{
+		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+			return expectedID, nil
+		},
+	}
+
+	service := NewHabitService(mockRepo)
+
+	id, err := service.CreateHabit(
 		context.Background(),
 		"Work out",
 		"Health",
@@ -88,21 +54,11 @@ func TestCreateHabit(t *testing.T) {
 		10,
 	)
 
-	assert.NoError(t, err)
-	assert.NotEqual(t, uuid.Nil, id)
-}
+	if err != nil {
+		t.Fatal("unexpected error %v", err)
+	}
 
-func TestGetHabitById(t *testing.T) {
-	mockStore := MockHabitStore{}
-	habitService := NewHabitService(&mockStore)
-
-	ctx := context.Background()
-	id := uuid.New()
-	emptyHabit := domain.Habit{}
-
-	habit, err := habitService.Store.GetHabitById(ctx, id)
-
-	assert.NoError(t, err)
-	assert.NotEqual(t, emptyHabit, habit)
-	assert.Equal(t, id, habit.ID)
+	if id != expectedID {
+		t.Fatalf("expected %v, got %v", expectedID, id)
+	}
 }
