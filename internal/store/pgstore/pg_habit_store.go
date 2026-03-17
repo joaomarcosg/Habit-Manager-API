@@ -2,9 +2,11 @@ package pgstore
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
@@ -22,11 +24,23 @@ func NewPGHabitStore(pool *pgxpool.Pool) PGHabitStore {
 	}
 }
 
+var _ domain.HabitRepository = (*PGHabitStore)(nil)
+
 func toPgTimestamptz(t time.Time) pgtype.Timestamptz {
 	return pgtype.Timestamptz{
 		Time:  t,
 		Valid: true,
 	}
+}
+
+func toPgWeekDays(weekDays []domain.WeekDay) []Weekday {
+	days := make([]Weekday, 0, len(weekDays))
+
+	for _, d := range weekDays {
+		days = append(days, Weekday(d))
+	}
+
+	return days
 }
 
 func toDomainWeekDays(dbDays []Weekday) []domain.WeekDay {
@@ -61,24 +75,16 @@ func toPgInt(i int) pgtype.Int2 {
 	}
 }
 
-func (pgh *PGHabitStore) CreateHabit(
-	ctx context.Context,
-	name,
-	category,
-	description string,
-	frequency []Weekday,
-	startDate,
-	targetDate time.Time,
-	priority int,
-) (uuid.UUID, error) {
+func (pgh *PGHabitStore) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+
 	id, err := pgh.Queries.CreateHabit(ctx, CreateHabitParams{
-		Name:        name,
-		Category:    category,
-		Description: description,
-		Frequency:   frequency,
-		StartDate:   toPgTimestamptz(startDate),
-		TargetDate:  toPgTimestamptz(targetDate),
-		Priority:    int16(priority),
+		Name:        habit.Name,
+		Category:    habit.Category,
+		Description: habit.Description,
+		Frequency:   toPgWeekDays(habit.Frequency),
+		StartDate:   toPgTimestamptz(habit.StartDate),
+		TargetDate:  toPgTimestamptz(habit.TargetDate),
+		Priority:    int16(habit.Priority),
 	})
 
 	if err != nil {
@@ -88,31 +94,14 @@ func (pgh *PGHabitStore) CreateHabit(
 	return id, nil
 }
 
-func (pgh *PGHabitStore) GetHabitById(ctx context.Context, id uuid.UUID) (domain.Habit, error) {
-	habit, err := pgh.Queries.GetHabitById(ctx, id)
-
-	if err != nil {
-		return domain.Habit{}, err
-	}
-
-	return domain.Habit{
-		ID:          habit.ID,
-		Name:        habit.Name,
-		Category:    habit.Category,
-		Description: habit.Description,
-		Frequency:   toDomainWeekDays(habit.Frequency),
-		StartDate:   habit.StartDate.Time,
-		TargetDate:  habit.TargetDate.Time,
-		Priority:    int(habit.Priority),
-		CreatedAt:   habit.CreatedAt,
-		UpdatedAt:   habit.UpdatedAt,
-	}, nil
-}
-
 func (pgh *PGHabitStore) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
+
 	habit, err := pgh.Queries.GetHabitByName(ctx, name)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.Habit{}, domain.ErrHabitNotFound
+		}
 		return domain.Habit{}, err
 	}
 
@@ -130,24 +119,16 @@ func (pgh *PGHabitStore) GetHabitByName(ctx context.Context, name string) (domai
 	}, nil
 }
 
-func (pgh *PGHabitStore) UpdateHabit(
-	ctx context.Context,
-	name,
-	category,
-	description string,
-	frequency []Weekday,
-	startDate,
-	targetDate time.Time,
-	priority int,
-) (domain.Habit, error) {
+func (pgh *PGHabitStore) UpdateHabit(ctx context.Context, habit domain.Habit) (domain.Habit, error) {
+
 	updatedHabit, err := pgh.Queries.UpdateHabit(ctx, UpdateHabitParams{
-		Name:        toPgText(name),
-		Category:    toPgText(category),
-		Description: toPgText(description),
-		Frequency:   frequency,
-		StartDate:   toPgTimestamptz(startDate),
-		TargetDate:  toPgTimestamptz(targetDate),
-		Priority:    toPgInt(priority),
+		Name:        toPgText(habit.Name),
+		Category:    toPgText(habit.Category),
+		Description: toPgText(habit.Description),
+		Frequency:   toPgWeekDays(habit.Frequency),
+		StartDate:   toPgTimestamptz(habit.StartDate),
+		TargetDate:  toPgTimestamptz(habit.TargetDate),
+		Priority:    toPgInt(habit.Priority),
 	})
 
 	if err != nil {
@@ -168,12 +149,17 @@ func (pgh *PGHabitStore) UpdateHabit(
 	}, nil
 }
 
-func (pgh *PGHabitStore) DeleteHabit(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
-	id, err := pgh.Queries.DeleteHabit(ctx, id)
+func (pgh *PGHabitStore) DeleteHabit(ctx context.Context, name string) error {
+
+	_, err := pgh.Queries.DeleteHabit(ctx, name)
 
 	if err != nil {
-		return uuid.UUID{}, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrHabitNotFound
+		}
+
+		return err
 	}
 
-	return id, nil
+	return nil
 }
