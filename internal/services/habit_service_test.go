@@ -3,11 +3,18 @@ package services
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
 )
+
+type MockCategoryRepo struct {
+	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
+}
+
+func (m *MockCategoryRepo) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
+	return m.GetCategoryByNameFn(ctx, name)
+}
 
 type MockHabitRepository struct {
 	CreateHabitFn    func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
@@ -35,27 +42,29 @@ func (m *MockHabitRepository) DeleteHabit(ctx context.Context, name string) erro
 func TestSuccessCreateHabit(t *testing.T) {
 	expectedID := uuid.New()
 
-	mockRepo := &MockHabitRepository{
+	mockHabitRepo := &MockHabitRepository{
 		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 			return expectedID, nil
 		},
 	}
 
-	service := NewHabitService(mockRepo)
+	mockCategoryRepo := &MockCategoryRepo{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{Name: "Health"}, nil
+		},
+	}
 
-	id, err := service.CreateHabit(
-		context.Background(),
-		"Work out",
-		"Health",
-		"Work out 5 times a week",
-		[]domain.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
-		time.Now(),
-		time.Now().Add(7),
-		10,
-	)
+	service := NewHabitService(mockHabitRepo, mockCategoryRepo)
+
+	newHabit := domain.Habit{
+		Name:     "Work out",
+		Category: "Health",
+	}
+
+	id, err := service.CreateHabit(context.Background(), newHabit)
 
 	if err != nil {
-		t.Fatal("unexpected error %v", err)
+		t.Fatalf("unexpected error %v", err)
 	}
 
 	if id != expectedID {
