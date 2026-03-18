@@ -8,28 +8,29 @@ import (
 )
 
 type HabitService struct {
-	repo domain.HabitRepository
+	repo         domain.HabitRepository
+	categoryRepo domain.CategoryRepository
 }
 
-func NewHabitService(repo domain.HabitRepository) *HabitService {
+func NewHabitService(
+	repo domain.HabitRepository,
+	categoryRepo domain.CategoryRepository,
+) *HabitService {
 	return &HabitService{
-		repo: repo,
+		repo:         repo,
+		categoryRepo: categoryRepo,
 	}
 }
 
 func (hs *HabitService) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 
-	newHabit := domain.Habit{
-		Name:        habit.Name,
-		Category:    habit.Category,
-		Description: habit.Description,
-		Frequency:   habit.Frequency,
-		StartDate:   habit.StartDate,
-		TargetDate:  habit.TargetDate,
-		Priority:    habit.Priority,
+	_, err := hs.categoryRepo.GetCategoryByName(ctx, habit.Name)
+
+	if err != nil {
+		return uuid.UUID{}, err
 	}
 
-	id, err := hs.repo.CreateHabit(ctx, newHabit)
+	id, err := hs.repo.CreateHabit(ctx, habit)
 
 	if err != nil {
 		return uuid.UUID{}, err
