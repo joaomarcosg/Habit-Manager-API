@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/google/uuid"
@@ -79,5 +80,47 @@ func TestSuccessCreateHabit(t *testing.T) {
 
 	if id != expectedID {
 		t.Fatalf("expected %v, got %v", expectedID, id)
+	}
+}
+
+func TestCategoryNotFoundCreateHabit(t *testing.T) {
+	createCalled := false
+
+	mockHabitRepo := &MockHabitRepository{
+		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+			createCalled = true
+			return uuid.New(), nil
+		},
+	}
+
+	mockCategoryRepo := &MockCategoryRepo{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{}, domain.ErrCategoryNotFound
+		},
+	}
+
+	service := NewHabitService(mockHabitRepo, mockCategoryRepo)
+
+	newHabit := domain.Habit{
+		Name:     "Work out",
+		Category: "Health",
+	}
+
+	id, err := service.CreateHabit(context.Background(), newHabit)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+
+	if !errors.Is(err, domain.ErrCategoryNotFound) {
+		t.Fatalf("expected ErrCategoryNotFound, got %v", err)
+	}
+
+	if id != uuid.Nil {
+		t.Fatalf("expected empty uuid, got %v", id)
+	}
+
+	if createCalled {
+		t.Fatalf("CreateHabit should not be called when category does not exist")
 	}
 }
