@@ -9,11 +9,21 @@ import (
 )
 
 type MockCategoryRepo struct {
+	CreateCategoryFn    func(ctx context.Context, category domain.Category) (uuid.UUID, error)
 	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
+	DeleteCategoryFn    func(ctx context.Context, name string) error
+}
+
+func (m *MockCategoryRepo) CreateCategory(ctx context.Context, category domain.Category) (uuid.UUID, error) {
+	return m.CreateCategoryFn(ctx, category)
 }
 
 func (m *MockCategoryRepo) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
 	return m.GetCategoryByNameFn(ctx, name)
+}
+
+func (m *MockCategoryRepo) DeleteCategory(ctx context.Context, name string) error {
+	return m.DeleteCategoryFn(ctx, name)
 }
 
 type MockHabitRepository struct {
