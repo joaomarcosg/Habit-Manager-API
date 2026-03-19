@@ -13,6 +13,11 @@ SELECT entries
 FROM categories
 WHERE name = $1;
 
+-- name: IncrementCategoryEntries :execresult
+UPDATE categories
+SET entries = entries + 1
+WHERE name = $1;
+
 -- name: DeleteCategory :execresult
 DELETE FROM categories
 WHERE name = $1
