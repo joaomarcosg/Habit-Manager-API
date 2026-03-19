@@ -13,6 +13,7 @@ import (
 type MockCategoryRepository struct {
 	CreateCategoryFn    func(ctx context.Context, category domain.Category) (uuid.UUID, error)
 	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
+	IncrementEntriesFn  func(ctx context.Context, name string) error
 	DeleteCategoryFn    func(ctx context.Context, name string) error
 }
 
@@ -22,6 +23,10 @@ func (m *MockCategoryRepository) CreateCategory(ctx context.Context, category do
 
 func (m *MockCategoryRepository) GetCategoryByName(ctx context.Context, name string) (domain.Category, error) {
 	return m.GetCategoryByNameFn(ctx, name)
+}
+
+func (m *MockCategoryRepository) IncrementEntries(ctx context.Context, name string) error {
+	return m.IncrementEntriesFn(ctx, name)
 }
 
 func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string) error {
