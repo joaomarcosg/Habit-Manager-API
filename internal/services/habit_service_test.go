@@ -124,3 +124,41 @@ func TestCategoryNotFoundCreateHabit(t *testing.T) {
 		t.Fatalf("CreateHabit should not be called when category does not exist")
 	}
 }
+
+func TestIncreaseCategoryEntriesCreateHabit(t *testing.T) {
+	expectedEntries := 1
+
+	mockHabitRepo := &MockHabitRepository{
+		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+			return uuid.New(), nil
+		},
+	}
+
+	mockCategoryRepo := &MockCategoryRepo{
+		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
+			return domain.Category{
+				Name:    "Health",
+				Entries: expectedEntries,
+			}, nil
+		},
+	}
+
+	service := NewHabitService(mockHabitRepo, mockCategoryRepo)
+
+	newHabit := domain.Habit{
+		Name:     "Work out",
+		Category: "Health",
+	}
+	_, err := service.CreateHabit(context.Background(), newHabit)
+
+	category, err := service.categoryRepo.GetCategoryByName(context.Background(), newHabit.Name)
+
+	if err != nil {
+		t.Fatalf("unexpected error %v", err)
+	}
+
+	if expectedEntries != category.Entries {
+		t.Fatalf("expected %d, got %d", expectedEntries, category.Entries)
+	}
+
+}
