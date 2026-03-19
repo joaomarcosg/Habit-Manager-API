@@ -94,6 +94,49 @@ func (pgh *PGHabitStore) CreateHabit(ctx context.Context, habit domain.Habit) (u
 	return id, nil
 }
 
+func (pgh *PGHabitStore) CreateHabitWithCategoryUpdate(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+
+	tx, err := pgh.Pool.Begin(ctx)
+
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	defer tx.Rollback(ctx)
+
+	qtx := pgh.Queries.WithTx(tx)
+
+	id, err := qtx.CreateHabit(ctx, CreateHabitParams{
+		Name:        habit.Name,
+		Category:    habit.Category,
+		Description: habit.Description,
+		Frequency:   toPgWeekDays(habit.Frequency),
+		StartDate:   toPgTimestamptz(habit.StartDate),
+		TargetDate:  toPgTimestamptz(habit.TargetDate),
+		Priority:    int16(habit.Priority),
+	})
+
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	tag, err := qtx.IncrementCategoryEntries(ctx, habit.Category)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return uuid.Nil, domain.ErrCategoryNotFound
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return uuid.UUID{}, err
+	}
+
+	return id, nil
+
+}
+
 func (pgh *PGHabitStore) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
 
 	habit, err := pgh.Queries.GetHabitByName(ctx, name)
