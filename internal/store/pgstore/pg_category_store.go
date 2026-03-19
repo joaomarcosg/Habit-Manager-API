@@ -60,6 +60,21 @@ func (pgc *PGCategoryStore) GetCategoryByName(ctx context.Context, name string) 
 	}, nil
 }
 
+func (pgc *PGCategoryStore) IncrementEntries(ctx context.Context, name string) error {
+
+	tag, err := pgc.Queries.IncrementCategoryEntries(ctx, name)
+
+	if err != nil {
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return domain.ErrCategoryNotFound
+	}
+
+	return nil
+}
+
 func (pgc *PGCategoryStore) DeleteCategory(ctx context.Context, name string) error {
 
 	ok, err := pgc.Queries.DeleteCategory(ctx, name)
