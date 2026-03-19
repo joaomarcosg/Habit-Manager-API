@@ -66,3 +66,13 @@ func (q *Queries) GetCategoryEntries(ctx context.Context, name string) (int, err
 	err := row.Scan(&entries)
 	return entries, err
 }
+
+const incrementCategoryEntries = `-- name: IncrementCategoryEntries :execresult
+UPDATE categories
+SET entries = entries + 1
+WHERE name = $1
+`
+
+func (q *Queries) IncrementCategoryEntries(ctx context.Context, name string) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, incrementCategoryEntries, name)
+}
