@@ -24,19 +24,11 @@ func NewHabitService(
 
 func (hs *HabitService) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 
-	category, err := hs.categoryRepo.GetCategoryByName(ctx, habit.Name)
+	id, err := hs.repo.CreateHabitWithCategoryUpdate(ctx, habit)
 
 	if err != nil {
 		return uuid.UUID{}, err
 	}
-
-	id, err := hs.repo.CreateHabit(ctx, habit)
-
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-
-	category.Entries++
 
 	return id, nil
 
