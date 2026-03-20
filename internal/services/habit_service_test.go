@@ -12,6 +12,7 @@ import (
 type MockCategoryRepo struct {
 	CreateCategoryFn    func(ctx context.Context, category domain.Category) (uuid.UUID, error)
 	GetCategoryByNameFn func(ctx context.Context, name string) (domain.Category, error)
+	IncrementEntriesFn  func(ctx context.Context, name string) error
 	DeleteCategoryFn    func(ctx context.Context, name string) error
 }
 
@@ -23,19 +24,31 @@ func (m *MockCategoryRepo) GetCategoryByName(ctx context.Context, name string) (
 	return m.GetCategoryByNameFn(ctx, name)
 }
 
+func (m *MockCategoryRepo) IncrementEntries(ctx context.Context, name string) error {
+	return m.IncrementEntriesFn(ctx, name)
+}
+
 func (m *MockCategoryRepo) DeleteCategory(ctx context.Context, name string) error {
 	return m.DeleteCategoryFn(ctx, name)
 }
 
 type MockHabitRepository struct {
-	CreateHabitFn    func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
-	GetHabitByNameFn func(ctx context.Context, name string) (domain.Habit, error)
-	UpdateHabitFn    func(ctx context.Context, habit domain.Habit) (domain.Habit, error)
-	DeleteHabitFn    func(ctx context.Context, name string) error
+	CreateHabitFn                   func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
+	CreateHabitWithCategoryUpdateFn func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
+	GetHabitByNameFn                func(ctx context.Context, name string) (domain.Habit, error)
+	UpdateHabitFn                   func(ctx context.Context, habit domain.Habit) (domain.Habit, error)
+	DeleteHabitFn                   func(ctx context.Context, name string) error
 }
 
 func (m *MockHabitRepository) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 	return m.CreateHabitFn(ctx, habit)
+}
+
+func (m *MockHabitRepository) CreateHabitWithCategoryUpdate(
+	ctx context.Context,
+	habit domain.Habit,
+) (uuid.UUID, error) {
+	return m.CreateHabitWithCategoryUpdateFn(ctx, habit)
 }
 
 func (m *MockHabitRepository) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
@@ -123,42 +136,4 @@ func TestCategoryNotFoundCreateHabit(t *testing.T) {
 	if createCalled {
 		t.Fatalf("CreateHabit should not be called when category does not exist")
 	}
-}
-
-func TestIncreaseCategoryEntriesCreateHabit(t *testing.T) {
-	expectedEntries := 1
-
-	mockHabitRepo := &MockHabitRepository{
-		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
-			return uuid.New(), nil
-		},
-	}
-
-	mockCategoryRepo := &MockCategoryRepo{
-		GetCategoryByNameFn: func(ctx context.Context, name string) (domain.Category, error) {
-			return domain.Category{
-				Name:    "Health",
-				Entries: expectedEntries,
-			}, nil
-		},
-	}
-
-	service := NewHabitService(mockHabitRepo, mockCategoryRepo)
-
-	newHabit := domain.Habit{
-		Name:     "Work out",
-		Category: "Health",
-	}
-	_, err := service.CreateHabit(context.Background(), newHabit)
-
-	category, err := service.categoryRepo.GetCategoryByName(context.Background(), newHabit.Name)
-
-	if err != nil {
-		t.Fatalf("unexpected error %v", err)
-	}
-
-	if expectedEntries != category.Entries {
-		t.Fatalf("expected %d, got %d", expectedEntries, category.Entries)
-	}
-
 }
