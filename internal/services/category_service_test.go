@@ -33,7 +33,7 @@ func (m *MockCategoryRepository) DeleteCategory(ctx context.Context, name string
 	return m.DeleteCategoryFn(ctx, name)
 }
 
-func TestSuccessCreateCategory(t *testing.T) {
+func TestCreateCategory_Success(t *testing.T) {
 	expectedID := uuid.New()
 
 	mockRepo := &MockCategoryRepository{
@@ -55,7 +55,7 @@ func TestSuccessCreateCategory(t *testing.T) {
 	}
 }
 
-func TestDuplicateNameCreateCategory(t *testing.T) {
+func TestCreateCategory_DuplicateName(t *testing.T) {
 	mockRepo := &MockCategoryRepository{
 		CreateCategoryFn: func(ctx context.Context, category domain.Category) (uuid.UUID, error) {
 			return uuid.UUID{}, domain.ErrDuplicateCategoryName
@@ -79,7 +79,7 @@ func TestDuplicateNameCreateCategory(t *testing.T) {
 	}
 }
 
-func TestSuccessGetCategoryByName(t *testing.T) {
+func TestGetCategoryByName_Success(t *testing.T) {
 	expectedCategory := domain.Category{
 		ID:        uuid.New(),
 		Name:      "Health",
@@ -114,7 +114,7 @@ func TestSuccessGetCategoryByName(t *testing.T) {
 
 }
 
-func TestCategoryNotFoundGetCategoryByName(t *testing.T) {
+func TestGetCategoryByName_CategoryNotFound(t *testing.T) {
 	emptyCategory := domain.Category{}
 
 	mockRepo := &MockCategoryRepository{
@@ -141,7 +141,7 @@ func TestCategoryNotFoundGetCategoryByName(t *testing.T) {
 
 }
 
-func TestGetCategoryEntries(t *testing.T) {
+func TestGetCategory_Entries(t *testing.T) {
 	expectedCategory := domain.Category{
 		ID:        uuid.New(),
 		Name:      "Health",
@@ -178,7 +178,7 @@ func TestGetCategoryEntries(t *testing.T) {
 
 }
 
-func TestSuccessDeleteCategory(t *testing.T) {
+func TestDeleteCategory_Success(t *testing.T) {
 	deleteCalled := false
 
 	mockRepo := &MockCategoryRepository{
@@ -201,7 +201,7 @@ func TestSuccessDeleteCategory(t *testing.T) {
 	}
 }
 
-func TestCategoryInUseDeleteCategory(t *testing.T) {
+func TestDeleteCategory_CategoryInUse(t *testing.T) {
 
 	mockRepo := MockCategoryRepository{
 		DeleteCategoryFn: func(ctx context.Context, name string) error {

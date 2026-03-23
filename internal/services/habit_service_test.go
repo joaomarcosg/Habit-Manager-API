@@ -63,7 +63,7 @@ func (m *MockHabitRepository) DeleteHabit(ctx context.Context, name string) erro
 	return m.DeleteHabitFn(ctx, name)
 }
 
-func TestSuccessCreateHabit(t *testing.T) {
+func TestCreateHabit_Success(t *testing.T) {
 	expectedID := uuid.New()
 
 	mockHabitRepo := &MockHabitRepository{
@@ -96,7 +96,7 @@ func TestSuccessCreateHabit(t *testing.T) {
 	}
 }
 
-func TestCategoryNotFoundCreateHabit(t *testing.T) {
+func TestCreateHabit_CategoryNotFound(t *testing.T) {
 	createCalled := false
 
 	mockHabitRepo := &MockHabitRepository{
