@@ -24,7 +24,7 @@ func NewHabitService(
 
 func (hs *HabitService) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 
-	id, err := hs.repo.CreateHabitWithCategoryUpdate(ctx, habit)
+	id, err := hs.repo.CreateHabit(ctx, habit)
 
 	if err != nil {
 		return uuid.UUID{}, err

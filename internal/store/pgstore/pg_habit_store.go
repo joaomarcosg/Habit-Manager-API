@@ -77,25 +77,6 @@ func toPgInt(i int) pgtype.Int2 {
 
 func (pgh *PGHabitStore) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 
-	id, err := pgh.Queries.CreateHabit(ctx, CreateHabitParams{
-		Name:        habit.Name,
-		Category:    habit.Category,
-		Description: habit.Description,
-		Frequency:   toPgWeekDays(habit.Frequency),
-		StartDate:   toPgTimestamptz(habit.StartDate),
-		TargetDate:  toPgTimestamptz(habit.TargetDate),
-		Priority:    int16(habit.Priority),
-	})
-
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-
-	return id, nil
-}
-
-func (pgh *PGHabitStore) CreateHabitWithCategoryUpdate(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
-
 	tx, err := pgh.Pool.Begin(ctx)
 
 	if err != nil {
