@@ -65,9 +65,11 @@ func (m *MockHabitRepository) DeleteHabit(ctx context.Context, name string) erro
 
 func TestCreateHabit_Success(t *testing.T) {
 	expectedID := uuid.New()
+	called := false
 
 	mockHabitRepo := &MockHabitRepository{
 		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+			called = true
 			return expectedID, nil
 		},
 	}
@@ -93,6 +95,10 @@ func TestCreateHabit_Success(t *testing.T) {
 
 	if id != expectedID {
 		t.Fatalf("expected %v, got %v", expectedID, id)
+	}
+
+	if !called {
+		t.Fatalf("expected CreateHabitWithCategoryUpdate to be called")
 	}
 }
 
