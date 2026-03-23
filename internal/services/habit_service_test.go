@@ -68,7 +68,7 @@ func TestCreateHabit_Success(t *testing.T) {
 	called := false
 
 	mockHabitRepo := &MockHabitRepository{
-		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+		CreateHabitWithCategoryUpdateFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 			called = true
 			return expectedID, nil
 		},
@@ -103,12 +103,10 @@ func TestCreateHabit_Success(t *testing.T) {
 }
 
 func TestCreateHabit_CategoryNotFound(t *testing.T) {
-	createCalled := false
 
 	mockHabitRepo := &MockHabitRepository{
-		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
-			createCalled = true
-			return uuid.New(), nil
+		CreateHabitWithCategoryUpdateFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+			return uuid.New(), domain.ErrCategoryNotFound
 		},
 	}
 
@@ -139,7 +137,4 @@ func TestCreateHabit_CategoryNotFound(t *testing.T) {
 		t.Fatalf("expected empty uuid, got %v", id)
 	}
 
-	if createCalled {
-		t.Fatalf("CreateHabit should not be called when category does not exist")
-	}
 }
