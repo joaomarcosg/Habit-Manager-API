@@ -50,8 +50,10 @@ HABIT_MANAGER_DATABASE_NAME=habit
 HABIT_MANAGER_DATABASE_USER=postgres
 HABIT_MANAGER_DATABASE_PASSWORD=123
 HABIT_MANAGER_DATABASE_HOST=localhost
-HABIT_MANAGER_KEY=abcdefghijlmnopqrstuvwxyz
+HABIT_MANAGER_KEY=abcdefghijlmnopqrstuvwxyz1234567
 ```
+
+📌 **The environment variable ```HABIT_MANAGER_KEY``` is a 32 bits key. Use [random.org](https://www.random.org/) to generate a string.**
 
 <h3>Starting</h3>
 
@@ -59,3 +61,17 @@ HABIT_MANAGER_KEY=abcdefghijlmnopqrstuvwxyz
 cd habit-manager-api
 go run /cmd/api/main.go
 ```
+
+<h2 id="routes">📍 API Endpoints</h2>
+
+| Route | Description |
+| ----- | ----------- |
+| <kbd>GET /api/v1/csrftoken</kbd> | Get authentication token [response details](#get-auth-detail) |
+| <kbd>POST /api/v1/users/signupuser | User registration [request details](#post-signup-user) |
+| <kbd>POST /api/v1/users/loginuser | User login [request details](#post-login-user)  |
+| <kbd>POST /api/v1/users/logout | User logout [response details](#post-logout-user)  |
+| <kbd>POST /api/v1/categories/ | Create a category for the habit [response details](#post-logout-user)  |
+| <kbd>POST /api/v1/categories/getCategory | Get a category by the name [response details](#post-create-category)  |
+| <kbd>GET /api/v1/categories/getCategoryEnties | Get category entries by the name [response details](#post-category-entries)  |
+| <kbd>POST /api/v1/categories/deleteCategory | delete a category by the name [response details](#post-delete-category)  |
+| <kbd>POST /api/v1/habits/ | Create a habit [response details](#post-create-habit)  |
