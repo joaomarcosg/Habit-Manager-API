@@ -33,11 +33,10 @@ func (m *MockCategoryRepo) DeleteCategory(ctx context.Context, name string) erro
 }
 
 type MockHabitRepository struct {
-	CreateHabitFn                   func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
-	CreateHabitWithCategoryUpdateFn func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
-	GetHabitByNameFn                func(ctx context.Context, name string) (domain.Habit, error)
-	UpdateHabitFn                   func(ctx context.Context, habit domain.Habit) (domain.Habit, error)
-	DeleteHabitFn                   func(ctx context.Context, name string) error
+	CreateHabitFn    func(ctx context.Context, habit domain.Habit) (uuid.UUID, error)
+	GetHabitByNameFn func(ctx context.Context, name string) (domain.Habit, error)
+	UpdateHabitFn    func(ctx context.Context, habit domain.Habit) (domain.Habit, error)
+	DeleteHabitFn    func(ctx context.Context, name string) error
 }
 
 func (m *MockHabitRepository) CreateHabit(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
@@ -48,7 +47,7 @@ func (m *MockHabitRepository) CreateHabitWithCategoryUpdate(
 	ctx context.Context,
 	habit domain.Habit,
 ) (uuid.UUID, error) {
-	return m.CreateHabitWithCategoryUpdateFn(ctx, habit)
+	return m.CreateHabitFn(ctx, habit)
 }
 
 func (m *MockHabitRepository) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
@@ -68,7 +67,7 @@ func TestCreateHabit_Success(t *testing.T) {
 	called := false
 
 	mockHabitRepo := &MockHabitRepository{
-		CreateHabitWithCategoryUpdateFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 			called = true
 			return expectedID, nil
 		},
@@ -105,7 +104,7 @@ func TestCreateHabit_Success(t *testing.T) {
 func TestCreateHabit_CategoryNotFound(t *testing.T) {
 
 	mockHabitRepo := &MockHabitRepository{
-		CreateHabitWithCategoryUpdateFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
+		CreateHabitFn: func(ctx context.Context, habit domain.Habit) (uuid.UUID, error) {
 			return uuid.New(), domain.ErrCategoryNotFound
 		},
 	}
