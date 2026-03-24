@@ -33,3 +33,24 @@ func (hs *HabitService) CreateHabit(ctx context.Context, habit domain.Habit) (uu
 	return id, nil
 
 }
+
+func (hs *HabitService) GetHabitByName(ctx context.Context, name string) (domain.Habit, error) {
+
+	habit, err := hs.repo.GetHabitByName(ctx, name)
+
+	if err != nil {
+		return domain.Habit{}, err
+	}
+
+	return domain.Habit{
+		ID:          habit.ID,
+		Name:        habit.Name,
+		Category:    habit.Category,
+		Description: habit.Description,
+		Frequency:   habit.Frequency,
+		StartDate:   habit.StartDate,
+		TargetDate:  habit.TargetDate,
+		Priority:    habit.Priority,
+	}, nil
+
+}
