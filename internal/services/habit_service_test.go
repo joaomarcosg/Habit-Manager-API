@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/joaomarcosg/Habit-Manager-API/internal/domain"
@@ -136,4 +137,46 @@ func TestCreateHabit_CategoryNotFound(t *testing.T) {
 		t.Fatalf("expected empty uuid, got %v", id)
 	}
 
+}
+
+func TestGetHabitByName_Success(t *testing.T) {
+	expectedHabit := domain.Habit{
+		ID:          uuid.New(),
+		Name:        "Work out",
+		Category:    "Health",
+		Description: "Work out five days a week",
+		Frequency:   []domain.WeekDay{"monday", "tuesday", "wednesday", "thursday", "friday"},
+		StartDate:   time.Now(),
+		TargetDate:  time.Now().Add(7),
+		Priority:    10,
+	}
+
+	mockHabitRepo := &MockHabitRepository{
+		GetHabitByNameFn: func(ctx context.Context, name string) (domain.Habit, error) {
+			return domain.Habit{
+				ID:          expectedHabit.ID,
+				Name:        expectedHabit.Name,
+				Category:    expectedHabit.Category,
+				Description: expectedHabit.Description,
+				Frequency:   expectedHabit.Frequency,
+				StartDate:   expectedHabit.StartDate,
+				TargetDate:  expectedHabit.TargetDate,
+				Priority:    expectedHabit.Priority,
+			}, nil
+		},
+	}
+
+	mockCategoryRepo := &MockCategoryRepo{}
+
+	service := NewHabitService(mockHabitRepo, mockCategoryRepo)
+
+	habit, err := service.GetHabitByName(context.Background(), "Work out")
+
+	if err != nil {
+		t.Fatalf("unexpected erro %v", err)
+	}
+
+	if habit != expectedHabit {
+		t.Fatalf("expected %v, got %v", expectedHabit, habit)
+	}
 }
