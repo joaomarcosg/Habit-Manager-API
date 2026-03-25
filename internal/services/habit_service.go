@@ -54,3 +54,15 @@ func (hs *HabitService) GetHabitByName(ctx context.Context, name string) (domain
 	}, nil
 
 }
+
+func (hs *HabitService) UpdateHabit(ctx context.Context, habit domain.Habit) (domain.Habit, error) {
+
+	habit, err := hs.repo.UpdateHabit(ctx, habit)
+
+	if err != nil {
+		return domain.Habit{}, err
+	}
+
+	return habit, nil
+
+}
