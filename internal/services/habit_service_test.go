@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 	"time"
 
@@ -176,7 +177,35 @@ func TestGetHabitByName_Success(t *testing.T) {
 		t.Fatalf("unexpected erro %v", err)
 	}
 
-	if habit != expectedHabit {
+	if !reflect.DeepEqual(habit, expectedHabit) {
 		t.Fatalf("expected %v, got %v", expectedHabit, habit)
 	}
+}
+
+func TestGetHabitByName_HabitNotFound(t *testing.T) {
+
+	mockHabitRepo := &MockHabitRepository{
+		GetHabitByNameFn: func(ctx context.Context, name string) (domain.Habit, error) {
+			return domain.Habit{}, domain.ErrHabitNotFound
+		},
+	}
+
+	mockCategoryRepo := &MockCategoryRepo{}
+
+	service := NewHabitService(mockHabitRepo, mockCategoryRepo)
+
+	habit, err := service.GetHabitByName(context.Background(), "Work out")
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+
+	if !errors.Is(err, domain.ErrHabitNotFound) {
+		t.Fatalf("expected ErrHabitNotFound, got %v", err)
+	}
+
+	if !reflect.DeepEqual(habit, domain.Habit{}) {
+		t.Fatalf("expected empty habit, got %v", habit)
+	}
+
 }
