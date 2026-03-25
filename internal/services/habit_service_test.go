@@ -209,3 +209,53 @@ func TestGetHabitByName_HabitNotFound(t *testing.T) {
 	}
 
 }
+
+func TestUpdateHabit_Success(t *testing.T) {
+
+	expectedHabit := domain.Habit{
+		Name:        "Work out",
+		Category:    "Health",
+		Description: "Work out four days a week",
+		Frequency:   []domain.WeekDay{"monday", "tuesday", "thursday", "friday"},
+		StartDate:   time.Now(),
+		TargetDate:  time.Now().Add(7),
+		Priority:    8,
+	}
+
+	called := false
+
+	mockHabitRepo := &MockHabitRepository{
+		UpdateHabitFn: func(ctx context.Context, habit domain.Habit) (domain.Habit, error) {
+			called = true
+			return domain.Habit{}, nil
+		},
+	}
+
+	mockCategoryRepo := &MockCategoryRepo{}
+
+	service := NewHabitService(mockHabitRepo, mockCategoryRepo)
+
+	habit, err := service.UpdateHabit(
+		domain.Habit{
+			Name:        "Work out",
+			Category:    "Health",
+			Description: "Work out four days a week",
+			Frequency:   []domain.WeekDay{"monday", "tuesday", "thursday", "friday"},
+			StartDate:   time.Now(),
+			TargetDate:  time.Now().Add(7),
+			Priority:    8,
+		},
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error %v", err)
+	}
+
+	if !reflect.DeepEqual(habit, expectedHabit) {
+		t.Fatalf("expected %v, got %v", expectedHabit, habit)
+	}
+
+	if !called {
+		t.Fatalf("expected CreateHabitWithCategoryUpdate to be called")
+	}
+}
